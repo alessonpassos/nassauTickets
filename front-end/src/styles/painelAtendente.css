@@ -1,0 +1,317 @@
+
+/*
+Cabeçalho do painel
+*/
+
+.painel__cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.painel__titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cor-ciano-900);
+}
+
+.painel__subtitulo {
+  margin: 0.15rem 0 0;
+  color: var(--cor-tinta-suave);
+}
+
+.painel__data {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--cor-tinta-suave);
+}
+
+/*
+Grade: coluna lateral + ficha
+*/
+
+.painel__grade {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.painel__lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/*
+Senha atual
+*/
+
+.senha-atual {
+  padding: 1.5rem;
+  border-radius: var(--raio-painel);
+  background: var(--cor-ciano-700);
+  color: #fff;
+}
+
+.senha-atual :focus-visible {
+  outline-color: #fff;
+}
+
+.senha-atual__rotulo {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--cor-ciano-200);
+}
+
+.senha-atual__codigo {
+  margin: 0.25rem 0 0;
+  font-size: 4.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.senha-atual__detalhe {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+  font-size: 1.05rem;
+}
+
+.senha-atual__espera {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--cor-ciano-200);
+}
+
+.senha-atual__acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+
+/*
+Fila de espera
+*/
+
+.fila {
+  padding: 1.25rem 0 0.25rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-painel);
+}
+
+.fila__cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 1.25rem 0.75rem;
+}
+
+.fila__titulo {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.fila__contagem {
+  font-size: 0.9rem;
+  color: var(--cor-tinta-suave);
+}
+
+.fila__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila__item {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.25rem 0.7rem calc(1.25rem - 4px);
+  border-top: 1px solid var(--cor-borda);
+  border-left: 4px solid transparent;
+}
+
+.fila__item--prioridade {
+  border-left-color: var(--cor-prioridade);
+}
+
+.fila__codigo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.fila__tipo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.fila__espera {
+  font-size: 0.9rem;
+  color: var(--cor-tinta-suave);
+}
+
+/*
+Ficha do paciente
+*/
+
+.ficha {
+  padding: 1.75rem 2rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-painel);
+}
+
+.ficha__cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.ficha__titulo {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.ficha__senha {
+  margin: 0;
+  color: var(--cor-tinta-suave);
+}
+
+.ficha__senha strong {
+  color: var(--cor-tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+.ficha__grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 1.25rem 0 0;
+  border: 0;
+}
+
+.ficha__legenda {
+  margin-bottom: 0.9rem;
+  padding: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--cor-primaria-escura);
+}
+
+.ficha__campos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.ficha__rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+/*
+Campos
+*/
+
+.campo {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.campo--metade {
+  grid-column: span 3;
+}
+
+.campo--dois-tercos {
+  grid-column: span 4;
+}
+
+.campo--inteiro {
+  grid-column: 1 / -1;
+}
+
+.campo__rotulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.campo__ajuda {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cor-tinta-suave);
+}
+
+.campo__entrada {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.55rem 0.75rem;
+  background: #fff;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-campo);
+}
+
+.campo__entrada::placeholder {
+  color: #5f7f88;
+}
+
+.campo__entrada:hover {
+  border-color: var(--cor-primaria);
+}
+
+.campo__entrada--area {
+  min-height: 88px;
+  resize: vertical;
+}
+
+/*
+Escolha de prioridade
+*/
+
+.opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-campo);
+  cursor: pointer;
+}
+
+.opcao:has(input:checked) {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria-clara);
+}
+
+.opcao input {
+  accent-color: var(--cor-primaria);
+}
