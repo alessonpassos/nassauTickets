@@ -3,6 +3,7 @@ import Rodape from "../components/Rodape";
 import SenhaAtual from "../components/SenhaAtual";
 import FilaEspera from "../components/FilaEspera";
 import FichaPaciente from "../components/FichaPaciente";
+import InfoUsuario from "../components/InfoUsuario";
 import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
@@ -37,7 +38,9 @@ const dataHoje = new Date().toLocaleDateString("pt-BR", {
 export default function PainelAtendente() {
   return (
     <div className="pagina">
-      <Cabecalho nomeUsuario={usuario.nome} funcao={usuario.funcao} />
+      <Cabecalho>
+        <InfoUsuario nomeUsuario={usuario.nome} funcao={usuario.funcao} />
+      </Cabecalho>
 
       <main className="pagina__corpo">
         <div className="painel__cabecalho">

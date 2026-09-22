@@ -1,13 +1,4 @@
-function obterIniciais(nome) {
-  return nome
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((parte) => parte[0].toUpperCase())
-    .join("");
-}
-
-export default function Cabecalho({ nomeUsuario, funcao }) {
+export default function Cabecalho({ children }) {
   return (
     <header className="cabecalho">
       <div className="cabecalho__interno">
@@ -19,15 +10,7 @@ export default function Cabecalho({ nomeUsuario, funcao }) {
           <span className="marca__nome">NassauTickets</span>
         </div>
 
-        <div className="usuario">
-          <div className="usuario__textos">
-            <span className="usuario__nome">{nomeUsuario}</span>
-            <span className="usuario__funcao">{funcao}</span>
-          </div>
-          <span className="usuario__avatar" aria-hidden="true">
-            {obterIniciais(nomeUsuario)}
-          </span>
-        </div>
+        {children}
       </div>
     </header>
   );

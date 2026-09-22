@@ -1,0 +1,297 @@
+/* ───────────── layout geral ───────────── */
+
+.painel {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #eaf6f7;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #063b46;
+}
+
+.painel__corpo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+}
+
+
+/* Texto só pra leitor de tela, invisível na tela */
+.painel__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ───────────── coluna principal ───────────── */
+
+.painel__principal {
+  display: flex;
+  flex-direction: column;
+  padding: 48px 56px;
+  gap: 40px;
+}
+
+/* ───────────── estado de espera ───────────── */
+
+.painel__espera {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  color: #4c7480;
+}
+
+.painel__espera-titulo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #063b46;
+}
+
+.painel__espera-texto {
+  font-size: 18px;
+  max-width: 420px;
+}
+
+/* ───────────── card da chamada ───────────── */
+
+.painel__chamada {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 4px 24px rgba(6, 59, 70, 0.08);
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Destaque animado quando a senha acabou de ser chamada */
+.painel__chamada--nova {
+  border-color: #7fdbe8;
+  box-shadow: 0 8px 32px rgba(6, 59, 70, 0.16);
+  animation: piscar 1.4s ease-in-out 2;
+}
+
+@keyframes piscar {
+  0%, 100% { background: #ffffff; }
+  50% { background: #eafcff; }
+}
+
+.painel__linha-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.painel__rotulo {
+  font-size: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4c7480;
+}
+
+.painel__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4c7480;
+  background: #eaf6f7;
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+.painel__status--ativo {
+  color: #0a7a52;
+  background: #e3f8ee;
+}
+
+.painel__ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0a7a52;
+  animation: pulsar 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* Número da senha, gigante */
+.painel__senha {
+  font-size: 160px;
+  font-weight: 800;
+  line-height: 1;
+  color: #063b46;
+  letter-spacing: 0.02em;
+}
+
+.painel__senha[data-tamanho="longo"] {
+  font-size: 120px;
+}
+
+.painel__senha[data-tamanho="muito-longo"] {
+  font-size: 90px;
+}
+
+.painel__destino {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.painel__local {
+  font-size: 36px;
+  font-weight: 700;
+  color: #063b46;
+}
+
+.painel__nome {
+  font-size: 22px;
+  color: #4c7480;
+}
+
+.painel__detalhes {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.painel__etiqueta {
+  background: #fdecd2;
+  color: #9a5b00;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.painel__setor {
+  background: #eaf6f7;
+  color: #4c7480;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* ───────────── rodapé de aviso ───────────── */
+
+.painel__aviso {
+  text-align: center;
+  font-size: 16px;
+  color: #4c7480;
+  padding-top: 16px;
+  border-top: 1px solid #d6ebee;
+}
+
+/* ───────────── coluna do histórico ───────────── */
+
+.painel__historico {
+  background: #063b46;
+  color: #ffffff;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.painel__historico-titulo {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.painel__lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.painel__item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.painel__item-senha {
+  font-size: 24px;
+  font-weight: 800;
+  color: #7fdbe8;
+}
+
+.painel__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.painel__item-local {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.painel__item-prioridade {
+  font-size: 12px;
+  color: #fdb872;
+  font-weight: 700;
+}
+
+.painel__item-hora {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.painel__vazio {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ───────────── responsivo (telas menores) ───────────── */
+
+@media (max-width: 900px) {
+  .painel {
+    grid-template-columns: 1fr;
+  }
+
+  .painel__senha {
+    font-size: 100px;
+  }
+}
+
+/* ───────────── relógio dentro do cabeçalho ───────────── */
+
+.painel__relogio {
+  text-align: right;
+}
+
+.painel__hora {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.painel__data {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: capitalize;
+}
