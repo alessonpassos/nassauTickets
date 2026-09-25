@@ -126,21 +126,33 @@ export function RelatoriosProvider({ children }) {
       hour: "2-digit",
       minute: "2-digit",
     });
+    const id = `${Date.now()}-${entrada.senha}`;
 
-    setDados((atual) => ({
-      diario: somarTipo(atual.diario, tipo),
-      mensal: somarTipo(atual.mensal, tipo),
-      auditoria: [
-        {
-          hora,
-          senha: entrada.senha,
-          acao: "Ficha salva",
-          guiche: entrada.guiche || "3",
-          usuario: entrada.usuario || "Marina Duarte",
-        },
-        ...atual.auditoria,
-      ],
-    }));
+    setDados((atual) => {
+      const repetido = atual.auditoria.some(
+        (evento) =>
+          evento.acao === "Ficha salva" &&
+          evento.senha === entrada.senha &&
+          evento.hora === hora
+      );
+      if (repetido) return atual;
+
+      return {
+        diario: somarTipo(atual.diario, tipo),
+        mensal: somarTipo(atual.mensal, tipo),
+        auditoria: [
+          {
+            id,
+            hora,
+            senha: entrada.senha,
+            acao: "Ficha salva",
+            guiche: entrada.guiche || "3",
+            usuario: entrada.usuario || "Marina Duarte",
+          },
+          ...atual.auditoria,
+        ],
+      };
+    });
   }, []);
 
   return (

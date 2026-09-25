@@ -144,8 +144,8 @@ export default function Relatorios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {auditoria.map((evento) => (
-                    <tr key={`${evento.hora}-${evento.senha}`}>
+                  {auditoria.map((evento, indice) => (
+                    <tr key={evento.id || `${evento.hora}-${evento.senha}-${indice}`}>
                       <td>{evento.hora}</td>
                       <td>
                         <strong>{evento.senha}</strong>

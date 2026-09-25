@@ -5,6 +5,7 @@ export default function FichaPaciente({ senha, usuario, guiche }) {
 
   function aoSalvar(evento) {
     evento.preventDefault();
+    evento.stopPropagation();
     const dados = new FormData(evento.currentTarget);
     registrarCadastro({
       senha,
