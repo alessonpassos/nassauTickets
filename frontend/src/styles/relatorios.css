@@ -1,0 +1,82 @@
+.relatorio__abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.relatorio__indicadores {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.relatorio__indicador {
+  padding: 1.25rem 1.35rem;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-painel);
+}
+
+.relatorio__indicador-rotulo {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cor-tinta-suave);
+}
+
+.relatorio__indicador-valor {
+  margin: 0.35rem 0 0;
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--cor-ciano-900);
+  font-variant-numeric: tabular-nums;
+}
+
+.relatorio__tabela-caixa {
+  padding: 1.75rem 2rem;
+}
+
+.relatorio__tabela-envolve {
+  overflow-x: auto;
+  margin-top: 1.25rem;
+}
+
+.relatorio__tabela {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.relatorio__tabela th,
+.relatorio__tabela td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.relatorio__tabela th {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cor-primaria-escura);
+}
+
+.relatorio__tabela td {
+  font-variant-numeric: tabular-nums;
+}
+
+.relatorio__tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+@media (max-width: 960px) {
+  .relatorio__indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .relatorio__indicadores {
+    grid-template-columns: 1fr;
+  }
+}
