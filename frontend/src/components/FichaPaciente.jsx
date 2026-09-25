@@ -1,6 +1,18 @@
-export default function FichaPaciente({ senha }) {
+import { useRelatorios } from "../context/useRelatorios";
+
+export default function FichaPaciente({ senha, usuario, guiche }) {
+  const { registrarCadastro } = useRelatorios();
+
   function aoSalvar(evento) {
     evento.preventDefault();
+    const dados = new FormData(evento.currentTarget);
+    registrarCadastro({
+      senha,
+      usuario,
+      guiche,
+      prioridade: dados.get("prioridade"),
+      tipoAtendimento: dados.get("tipoAtendimento"),
+    });
   }
 
   return (

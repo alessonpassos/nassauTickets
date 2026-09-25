@@ -72,7 +72,7 @@ export default function PainelSenhas({
         {chamadaAtual ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}` : ''}
       </p>
 
-      <Cabecalho>
+      <Cabecalho mostrarMenu={false}>
         <Relogio />
       </Cabecalho>
 

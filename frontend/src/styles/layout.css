@@ -28,10 +28,41 @@
   padding: 0.9rem 2rem;
 }
 
+.cabecalho__esquerda {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
 .marca {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.menu__link {
+  color: var(--cor-ciano-200);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--raio-campo);
+}
+
+.menu__link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.menu__link--ativo {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .marca__icone {

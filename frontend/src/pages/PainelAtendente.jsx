@@ -59,7 +59,11 @@ export default function PainelAtendente() {
             <FilaEspera senhas={fila} />
           </aside>
 
-          <FichaPaciente senha={senhaAtual.codigo} />
+          <FichaPaciente
+            senha={senhaAtual.codigo}
+            usuario={usuario.nome}
+            guiche="3"
+          />
         </div>
       </main>
 
