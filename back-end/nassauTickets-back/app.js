@@ -7,6 +7,7 @@ var cors = require("cors");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var senhasRouter = require("./routes/senhas");
+var guichesRouter = require("./routes/guiches");
 
 var app = express();
 
@@ -19,6 +20,7 @@ app.use(cookieParser());
 app.use("/api", indexRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/senhas", senhasRouter);
+app.use("/api/guiches", guichesRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));
