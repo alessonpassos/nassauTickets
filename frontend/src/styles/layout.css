@@ -144,6 +144,19 @@
 }
 
 @media (max-width: 600px) {
+  .cabecalho__interno,
+  .cabecalho__esquerda {
+    flex-wrap: wrap;
+  }
+
+  .cabecalho__esquerda {
+    gap: 0.75rem;
+  }
+
+  .menu {
+    flex-wrap: wrap;
+  }
+
   .rodape__interno {
     flex-direction: column;
     align-items: flex-start;

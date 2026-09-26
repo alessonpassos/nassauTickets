@@ -16,6 +16,14 @@ export default function Cabecalho({ children, mostrarMenu = true }) {
           {mostrarMenu ? (
             <nav className="menu" aria-label="Principal">
               <NavLink
+                to="/totem"
+                className={({ isActive }) =>
+                  `menu__link${isActive ? " menu__link--ativo" : ""}`
+                }
+              >
+                Totem
+              </NavLink>
+              <NavLink
                 to="/atendente"
                 className={({ isActive }) =>
                   `menu__link${isActive ? " menu__link--ativo" : ""}`
