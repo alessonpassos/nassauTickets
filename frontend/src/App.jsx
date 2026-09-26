@@ -13,14 +13,8 @@ export default function App() {
                 <Route path="/" element={<Navigate to="/totem" replace />} />
                 <Route path="/totem" element={<Totem />} />
                 <Route path="/totem/retirar" element={<Totem retirar />} />
-                <Route 
-                    path="/atendente" 
-                    element={<PainelAtendente />}
-                />
-                <Route
-                    path="/painel-de-senha"
-                    element={<PainelSenhas som={true} narrar={true} />}
-                />
+                <Route path="/atendente" element={<PainelAtendente />} />
+                <Route path="/painel-de-senha" element={<PainelSenhas som={true} narrar={true} />} />
                 <Route path="/relatorios" element={<Relatorios />} />
             </Routes>
             </RelatoriosProvider>

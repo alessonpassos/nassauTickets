@@ -3,8 +3,6 @@ import Cabecalho from '../components/Cabecalho';
 import Relogio, { formatarHora } from '../components/Relogio';
 import '../styles/PainelSenhas.css';
 
-/* abreviarNome, tamanhoDaSenha, tocarSinal, narrarChamada continuam iguais */
-
 export default function PainelSenhas({
   maxHistorico = 6,
   aviso = 'Tenha um documento com foto em mãos ao ser chamado.',
@@ -67,16 +65,17 @@ export default function PainelSenhas({
     : null;
 
     return (
-    <div className="painel" style={{ '--linhas': maxHistorico }}>
-      <p className="painel__sr" role="status" aria-live="polite">
-        {chamadaAtual ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}` : ''}
-      </p>
+  <div className="painel" style={{ '--linhas': maxHistorico }}>
+    <p className="painel__sr" role="status" aria-live="polite">
+      {chamadaAtual ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}` : ''}
+    </p>
 
-      <Cabecalho mostrarMenu={false}>
-        <Relogio />
-      </Cabecalho>
+    <div className="painel__conteudo">
+      <div className="painel__coluna-principal">
+        <Cabecalho mostrarMenu={false}>
+          <Relogio />
+        </Cabecalho>
 
-      <div className="painel__corpo">
         <main className="painel__principal" data-chamando={chamando}>
           {chamadaAtual ? (
             <section
@@ -119,30 +118,31 @@ export default function PainelSenhas({
 
           {aviso && <footer className="painel__aviso">{aviso}</footer>}
         </main>
-
-        <aside className="painel__historico" aria-label="Chamadas anteriores">
-          <h2 className="painel__historico-titulo">Chamadas anteriores</h2>
-
-          {ultimas.length > 0 ? (
-            <ol className="painel__lista">
-              {ultimas.map((item, i) => (
-                <li key={item.id ?? `${item.senha}-${i}`} className="painel__item">
-                  <span className="painel__item-senha">{item.senha}</span>
-                  <span className="painel__item-info">
-                    <span className="painel__item-local">{item.local}</span>
-                    {item.prioritario && (
-                      <span className="painel__item-prioridade">Prioritário</span>
-                    )}
-                  </span>
-                  <time className="painel__item-hora">{formatarHora(item.horario)}</time>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="painel__vazio">As últimas senhas chamadas aparecerão aqui.</p>
-          )}
-        </aside>
       </div>
+
+      <aside className="painel__historico" aria-label="Chamadas anteriores">
+        <h2 className="painel__historico-titulo">Chamadas anteriores</h2>
+
+        {ultimas.length > 0 ? (
+          <ol className="painel__lista">
+            {ultimas.map((item, i) => (
+              <li key={item.id ?? `${item.senha}-${i}`} className="painel__item">
+                <span className="painel__item-senha">{item.senha}</span>
+                <span className="painel__item-info">
+                  <span className="painel__item-local">{item.local}</span>
+                  {item.prioritario && (
+                    <span className="painel__item-prioridade">Prioritário</span>
+                  )}
+                </span>
+                <time className="painel__item-hora">{formatarHora(item.horario)}</time>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="painel__vazio">As últimas senhas chamadas aparecerão aqui.</p>
+        )}
+      </aside>
     </div>
-  );
+  </div>
+);
 }
