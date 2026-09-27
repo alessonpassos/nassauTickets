@@ -8,7 +8,7 @@ import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
 const usuario = {
-  nome: "Luiz Alexandre",
+  nome: "Marina Duarte",
   funcao: "Recepção, guichê 3",
 };
 
