@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { abrirJanelaTotem } from "../services/janelaTotem";
 
 export default function Cabecalho({ children, mostrarMenu = true }) {
   return (
@@ -6,7 +7,11 @@ export default function Cabecalho({ children, mostrarMenu = true }) {
       <div className="cabecalho__interno">
         <div className="cabecalho__esquerda">
           <div className="marca">
-            <svg className="marca__icone" viewBox="0 0 40 40" aria-hidden="true">
+            <svg
+              className="marca__icone"
+              viewBox="0 0 40 40"
+              aria-hidden="true"
+            >
               <rect width="40" height="40" rx="10" fill="#7fdbe8" />
               <path d="M17 10h6v7h7v6h-7v7h-6v-7h-7v-6h7z" fill="#063b46" />
             </svg>
@@ -15,14 +20,16 @@ export default function Cabecalho({ children, mostrarMenu = true }) {
 
           {mostrarMenu ? (
             <nav className="menu" aria-label="Principal">
-              <NavLink
-                to="/totem"
-                className={({ isActive }) =>
-                  `menu__link${isActive ? " menu__link--ativo" : ""}`
-                }
+              <a
+                href="/totem"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="menu__link"
+                onClick={abrirJanelaTotem}
+                aria-label="Totem (abre em nova janela)"
               >
                 Totem
-              </NavLink>
+              </a>
               <NavLink
                 to="/atendente"
                 className={({ isActive }) =>

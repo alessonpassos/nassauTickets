@@ -23,11 +23,8 @@ export function horarioTotem(agora = new Date()) {
   };
 }
 
-export function validarSolicitacao({ nome, tipo }) {
+export function validarSolicitacao({ tipo } = {}) {
   const erros = {};
-  if (!nome.trim()) erros.nome = "Informe seu nome para continuar.";
-  else if (nome.trim().length < 2 || nome.trim().length > 100)
-    erros.nome = "Use um nome entre 2 e 100 caracteres.";
   if (!TIPOS_SENHA.some((item) => item.codigo === tipo))
     erros.tipo = "Selecione o tipo de atendimento.";
   return erros;

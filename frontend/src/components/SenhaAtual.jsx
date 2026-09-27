@@ -9,7 +9,9 @@ export default function SenhaAtual({ codigo, tipo, prioritaria, espera }) {
 
       <p className="senha-atual__detalhe">
         {tipo}
-        {prioritaria && <span className="selo selo--prioridade">Prioritário</span>}
+        {prioritaria && (
+          <span className="selo selo--prioridade">Prioritário</span>
+        )}
       </p>
 
       <p className="senha-atual__espera">Aguardou {espera}</p>

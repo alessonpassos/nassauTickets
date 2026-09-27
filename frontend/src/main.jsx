@@ -1,10 +1,16 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
+import { prepararJanelaTotem } from "./services/janelaTotem";
+
+// A janela carrega somente a interface correspondente ao seu modo.
+const somenteTotem = prepararJanelaTotem();
+const App = lazy(() => somenteTotem ? import("./TotemApp.jsx") : import("./App.jsx"));
 import "./styles/global.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <Suspense fallback={<p role="status">Carregando…</p>}>
+      <App />
+    </Suspense>
   </StrictMode>
 );
