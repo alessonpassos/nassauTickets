@@ -8,24 +8,24 @@ import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
 const usuario = {
-  nome: "Marina Duarte",
+  nome: "Luiz Alexandre",
   funcao: "Recepção, guichê 3",
 };
 
 const senhaAtual = {
-  codigo: "P-024",
-  tipo: "Consulta",
+  codigo: "260917-SP024",
+  tipo: "Exame de sangue",
   prioritaria: true,
   espera: "12 min",
 };
 
 const fila = [
-  { codigo: "P-025", tipo: "Retorno", prioritaria: true, espera: "9 min" },
-  { codigo: "N-041", tipo: "Consulta", prioritaria: false, espera: "8 min" },
-  { codigo: "N-042", tipo: "Exame", prioritaria: false, espera: "6 min" },
-  { codigo: "N-043", tipo: "Consulta", prioritaria: false, espera: "4 min" },
-  { codigo: "P-026", tipo: "Vacinação", prioritaria: true, espera: "3 min" },
-  { codigo: "N-044", tipo: "Consulta", prioritaria: false, espera: "1 min" },
+  { codigo: "260917-SP025", tipo: "Resultado", prioritaria: true, espera: "9 min" },
+  { codigo: "260917-SP026", tipo: "Resultado", prioritaria: true, espera: "3 min" },
+  { codigo: "260917-SE025", tipo: "Resultado", prioritaria: false, espera: "4 min" },
+  { codigo: "260917-SG041", tipo: "Exame", prioritaria: false, espera: "8 min" },
+  { codigo: "260917-SG042", tipo: "Exame", prioritaria: false, espera: "6 min" },
+  { codigo: "260917-SG043", tipo: "Exame", prioritaria: false, espera: "1 min" },
 ];
 
 const dataHoje = new Date().toLocaleDateString("pt-BR", {

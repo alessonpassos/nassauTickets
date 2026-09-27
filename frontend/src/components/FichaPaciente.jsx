@@ -70,20 +70,6 @@ export default function FichaPaciente({ senha, usuario, guiche }) {
             />
           </div>
 
-          <div className="campo campo--metade">
-            <label className="campo__rotulo" htmlFor="cartaoSus">
-              Cartão SUS
-            </label>
-            <input
-              id="cartaoSus"
-              name="cartaoSus"
-              type="text"
-              inputMode="numeric"
-              className="campo__entrada"
-              autoComplete="off"
-            />
-          </div>
-
           <div className="campo">
             <label className="campo__rotulo" htmlFor="sexo">
               Sexo
@@ -132,10 +118,10 @@ export default function FichaPaciente({ senha, usuario, guiche }) {
               <option value="" disabled>
                 Selecione
               </option>
-              <option value="consulta">Consulta</option>
-              <option value="retorno">Retorno</option>
               <option value="exame">Exame</option>
               <option value="vacinacao">Vacinação</option>
+              <option value="exameDeSangue">Exame de sangue</option>
+              <option value="resultado">Resultado</option>
             </select>
           </div>
 
@@ -147,18 +133,10 @@ export default function FichaPaciente({ senha, usuario, guiche }) {
               <option value="" disabled>
                 Selecione o setor
               </option>
-              <option value="cardiologia">Cardiologia</option>
-              <option value="clinica-geral">Clínica geral</option>
-              <option value="dermatologia">Dermatologia</option>
-              <option value="endocrinologia">Endocrinologia</option>
-              <option value="ginecologia">Ginecologia</option>
+              <option value="salaDeExames">Sala de exames</option>
+              <option value="salaDeVacinacao">Sala de vacinação</option>
               <option value="laboratorio">Laboratório</option>
-              <option value="neurologia">Neurologia</option>
-              <option value="oftalmologia">Oftalmologia</option>
-              <option value="ortopedia">Ortopedia</option>
-              <option value="pediatria">Pediatria</option>
-              <option value="psiquiatria">Psiquiatria</option>
-              <option value="urologia">Urologia</option>
+              <option value="recepcao">Recepção</option>
             </select>
           </div>
 
