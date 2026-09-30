@@ -1,0 +1,139 @@
+@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap");
+
+
+/*
+Váriedades de tons de ciano para usar no design das telas.
+Escolha de luiz, podendo ser alterada futuramente.
+*/
+
+:root {
+  --cor-ciano-950: #052f38;
+  --cor-ciano-900: #063b46;
+  --cor-ciano-700: #086b7c;
+  --cor-ciano-600: #0b7a8c;
+  --cor-ciano-300: #7fdbe8;
+  --cor-ciano-200: #b5eaf1;
+  --cor-ciano-100: #d9f4f8;
+
+  --cor-fundo: #e6f5f8;
+  --cor-superficie: #ffffff;
+  --cor-tinta: #0e2a31;
+  --cor-tinta-suave: #4d6b73;
+  --cor-borda: #c5dfe4;
+  --cor-borda-forte: #8fb8c1;
+
+  --cor-primaria: var(--cor-ciano-600);
+  --cor-primaria-escura: var(--cor-ciano-700);
+  --cor-primaria-clara: var(--cor-ciano-100);
+
+  --cor-prioridade: #b86e00;
+  --cor-prioridade-clara: #fbeacc;
+  --cor-prioridade-texto: #7a4700;
+
+  --raio-painel: 14px;
+  --raio-campo: 8px;
+  --largura-maxima: 1400px;
+
+  --fonte: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--cor-tinta);
+  background: var(--cor-fundo);
+}
+
+/* Design de botões para usar no andamento do projeto */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: var(--raio-campo);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.botao--primario {
+  background: var(--cor-primaria);
+  color: #fff;
+}
+
+.botao--primario:hover {
+  background: var(--cor-primaria-escura);
+}
+
+.botao--secundario {
+  background: transparent;
+  color: var(--cor-primaria-escura);
+  border-color: var(--cor-borda-forte);
+}
+
+.botao--secundario:hover {
+  background: var(--cor-primaria-clara);
+}
+.botao--claro {
+  background: #fff;
+  color: var(--cor-primaria-escura);
+}
+
+.botao--claro:hover {
+  background: var(--cor-primaria-clara);
+}
+
+.botao--contorno-claro {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.botao--contorno-claro:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.selo {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.selo--prioridade {
+  background: var(--cor-prioridade-clara);
+  color: var(--cor-prioridade-texto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao {
+    transition: none;
+  }
+}

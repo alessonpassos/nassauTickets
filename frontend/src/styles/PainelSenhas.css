@@ -1,0 +1,381 @@
+.painel {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #063b46;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.painel *,
+.painel *::before,
+.painel *::after {
+  box-sizing: border-box;
+}
+
+.painel_conteudo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.painel_coluna-principal {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #eaf6f7;
+  overflow: hidden;
+}
+
+.painel_corpo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+}
+
+.painel_sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.painel_principal {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(24px, 4vw, 48px) clamp(24px, 4vw, 56px);
+  gap: clamp(16px, 2vw, 40px);
+  overflow: hidden;
+}
+
+.painel_espera {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  color: #4c7480;
+}
+
+.painel_espera-titulo {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 700;
+  color: #063b46;
+}
+
+.painel_espera-texto {
+  font-size: clamp(16px, 1.5vw, 18px);
+  max-width: 420px;
+}
+
+.painel_chamada {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(16px, 2vw, 24px);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: clamp(24px, 4vw, 48px);
+  box-shadow: 0 4px 24px rgba(6, 59, 70, 0.08);
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.painel_chamada--nova {
+  border-color: #7fdbe8;
+  box-shadow: 0 8px 32px rgba(6, 59, 70, 0.16);
+  animation: piscar 1.4s ease-in-out 2;
+}
+
+@keyframes piscar {
+  0%,
+  100% {
+    background: #ffffff;
+  }
+
+  50% {
+    background: #eafcff;
+  }
+}
+
+.painel_linha-topo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.painel_rotulo {
+  margin: 0;
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4c7480;
+}
+
+.painel_status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  font-weight: 600;
+  color: #4c7480;
+  background: #eaf6f7;
+  padding: 6px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.painel_status--ativo {
+  color: #0a7a52;
+  background: #e3f8ee;
+}
+
+.painel_ponto {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #0a7a52;
+  animation: pulsar 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+.painel_senha {
+  margin: 0;
+  max-width: 100%;
+  text-align: center;
+  font-size: clamp(72px, 11vw, 160px);
+  font-weight: 800;
+  line-height: 0.9;
+  color: #063b46;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  flex-shrink: 1;
+}
+
+.painel_senha[data-tamanho="longo"] {
+  font-size: clamp(64px, 8vw, 120px);
+}
+
+.painel_senha[data-tamanho="muito-longo"] {
+  font-size: clamp(52px, 6vw, 90px);
+}
+
+.painel_destino {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.painel_local {
+  margin: 0;
+  font-size: clamp(24px, 2.8vw, 36px);
+  font-weight: 700;
+  color: #063b46;
+}
+
+.painel_nome {
+  margin: 0;
+  font-size: clamp(18px, 1.8vw, 22px);
+  color: #4c7480;
+}
+
+.painel_detalhes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.painel_etiqueta {
+  background: #fdecd2;
+  color: #9a5b00;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.painel_setor {
+  background: #eaf6f7;
+  color: #4c7480;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.painel_aviso {
+  flex-shrink: 0;
+  text-align: center;
+  font-size: clamp(13px, 1.3vw, 16px);
+  color: #4c7480;
+  padding-top: 16px;
+  border-top: 1px solid #d6ebee;
+}
+
+.painel_audio {
+  flex-shrink: 0;
+}
+
+.painel_historico {
+  width: 340px;
+  height: 100%;
+  flex-shrink: 0;
+  background: var(--cor-ciano-950);
+  color: #ffffff;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+}
+
+.painel_historico-titulo {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e9ecec;
+  flex-shrink: 0;
+}
+
+.painel_lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.painel_item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.painel_item-senha {
+  font-size: 24px;
+  font-weight: 800;
+  color: #7fdbe8;
+}
+
+.painel_item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.painel_item-local {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.painel_item-prioridade {
+  font-size: 12px;
+  color: #fdb872;
+  font-weight: 700;
+}
+
+.painel_item-hora {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.painel_vazio {
+  margin: 0;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.painel_relogio {
+  text-align: right;
+}
+
+.painel_hora {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.painel_data {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.854);
+  text-transform: capitalize;
+}
+
+@media (max-width: 900px) {
+  .painel_conteudo {
+    flex-direction: column;
+  }
+
+  .painel_coluna-principal {
+    min-height: 65dvh;
+  }
+
+  .painel_historico {
+    width: 100%;
+    height: 35dvh;
+    padding: 24px;
+  }
+
+  .painel_senha {
+    font-size: clamp(64px, 15vw, 100px);
+  }
+
+  .painel_senha[data-tamanho="longo"] {
+    font-size: clamp(56px, 12vw, 84px);
+  }
+
+  .painel_senha[data-tamanho="muito-longo"] {
+    font-size: clamp(48px, 10vw, 72px);
+  }
+}

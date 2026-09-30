@@ -1,0 +1,180 @@
+.login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: var(--cor-fundo);
+}
+
+.login_marca {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2.5rem;
+  background: var(--cor-ciano-900);
+  color: #fff;
+}
+
+.login_marca-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.login_marca-nome {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.login_marca-icone {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.login_marca-frase {
+  max-width: 26ch;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.login_marca-rodape {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cor-ciano-200);
+}
+
+.login_conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+
+.login_cartao {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login_cabecalho {
+  margin-bottom: 1.75rem;
+}
+
+.login_marca-mobile {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.login_titulo {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cor-ciano-900);
+}
+
+.login_subtitulo {
+  margin: 0.35rem 0 0;
+  color: var(--cor-tinta-suave);
+}
+
+.login_form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.login_linha-opcoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.login_lembrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.login_lembrar input {
+  accent-color: var(--cor-primaria);
+}
+
+.login_link {
+  color: var(--cor-primaria-escura);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login_link:hover {
+  text-decoration: underline;
+}
+
+.login_erro {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--raio-campo);
+  background: #fbe9e7;
+  color: #8a2c1f;
+  font-size: 0.9rem;
+}
+
+.login_botao {
+  margin-top: 0.25rem;
+  width: 100%;
+}
+
+.login_rodape {
+  margin-top: 1.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--cor-tinta-suave);
+}
+
+.campo_grupo-senha {
+  position: relative;
+  display: flex;
+}
+
+.campo_alternar-senha {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 0.9rem;
+  background: transparent;
+  border: none;
+  color: var(--cor-tinta-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.campo_alternar-senha:hover {
+  color: var(--cor-primaria-escura);
+}
+
+@media (min-width: 900px) {
+  .login {
+    grid-template-columns: minmax(360px, 42%) 1fr;
+  }
+
+  .login_marca {
+    display: flex;
+  }
+
+  .login_marca-mobile {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campo_alternar-senha {
+    transition: none;
+  }
+}
