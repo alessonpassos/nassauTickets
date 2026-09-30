@@ -10,11 +10,11 @@ function obterIniciais(nome) {
 export default function InfoUsuario({ nomeUsuario, funcao }) {
   return (
     <div className="usuario">
-      <div className="usuario__textos">
-        <span className="usuario__nome">{nomeUsuario}</span>
-        <span className="usuario__funcao">{funcao}</span>
+      <div className="usuario_textos">
+        <span className="usuario_nome">{nomeUsuario}</span>
+        <span className="usuario_funcao">{funcao}</span>
       </div>
-      <span className="usuario__avatar" aria-hidden="true">
+      <span className="usuario_avatar" aria-hidden="true">
         {obterIniciais(nomeUsuario)}
       </span>
     </div>

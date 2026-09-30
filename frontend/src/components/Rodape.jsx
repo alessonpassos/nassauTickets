@@ -3,11 +3,11 @@ export default function Rodape() {
 
   return (
     <footer className="rodape">
-      <div className="rodape__interno">
-        <p className="rodape__texto">
-          {ano} NassauTickets. Projeto acadêmico de CRM hospitalar.
+      <div className="rodape_interno">
+        <p className="rodape_texto">
+          {ano} NassauTickets. Projeto acadêmico — controle de atendimento.
         </p>
-        <p className="rodape__texto">Versão de demonstração</p>
+        <p className="rodape_texto">Versão de demonstração</p>
       </div>
     </footer>
   );

@@ -1,0 +1,22 @@
+/* Componentes compartilhados entre telas (mensagens, filtros, início). Usam apenas tokens do global.css */
+.msg { margin: 0 0 1rem; padding: 0.75rem 1rem; border-radius: var(--raio-campo); font-weight: 500; border: 1px solid var(--cor-borda); background: var(--cor-superficie); }
+.msg--ok { background: var(--cor-primaria-clara); border-color: var(--cor-primaria); color: var(--cor-ciano-900); }
+.msg--erro { background: #fdecec; border-color: #c0392b; color: #7b1e14; }
+.msg--info { background: var(--cor-primaria-clara); color: var(--cor-ciano-900); }
+.vazio { margin: 1rem 0; color: var(--cor-tinta-suave); text-align: center; }
+.campo_erro { margin: 0.25rem 0 0; font-size: 0.875rem; color: #b3261e; }
+.campo--guiche { min-width: 9rem; }
+.filtro { display: flex; gap: 0.5rem; margin: 0.5rem 0 1rem; flex-wrap: wrap; }
+.filtro_botao { padding: 0.35rem 0.9rem; border-radius: 999px; border: 1px solid var(--cor-borda-forte); background: var(--cor-superficie); cursor: pointer; }
+.filtro_botao--ativo { background: var(--cor-primaria); border-color: var(--cor-primaria); color: #fff; }
+.menu_sair { background: none; border: 0; cursor: pointer; }
+.painel_audio { margin-top: 1rem; }
+.inicio_hero { padding: 1.5rem 0; max-width: 60ch; }
+.inicio_hero h1 { margin: 0 0 0.5rem; }
+.inicio_grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+.inicio_cartao { display: block; padding: 1.25rem; border-radius: var(--raio-painel); background: var(--cor-superficie); border: 1px solid var(--cor-borda); color: inherit; text-decoration: none; }
+.inicio_cartao:hover, .inicio_cartao:focus-visible { border-color: var(--cor-primaria); }
+.inicio_cartao h2 { margin: 0 0 0.35rem; color: var(--cor-primaria-escura); font-size: 1.15rem; }
+.inicio_cartao p { margin: 0; color: var(--cor-tinta-suave); }
+.filtro_botao:focus-visible, .menu_sair:focus-visible { outline: 3px solid var(--cor-primaria); outline-offset: 2px; }
+@media (max-width: 600px) { .campo--guiche { width: 100%; } }

@@ -115,7 +115,7 @@ export default function Totem({ retirar = false }) {
           Totem {TOTEM.codigo} · {TOTEM.nome} <span>•</span> 7h às 17h · Horário
           de Brasília
         </p>
-        <p className="totem-rodape__demo">
+        <p className="totem-rodape_demo">
           Demonstração local. As senhas não entram em uma fila real.
         </p>
       </footer>

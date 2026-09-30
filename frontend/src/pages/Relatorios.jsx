@@ -1,163 +1,129 @@
 import { useMemo, useState } from "react";
 import Cabecalho from "../components/Cabecalho";
+import CabecalhoPagina from "../components/CabecalhoPagina";
 import Rodape from "../components/Rodape";
 import InfoUsuario from "../components/InfoUsuario";
-import { useRelatorios } from "../context/useRelatorios";
+import useFila from "../hooks/useFila";
+import { lerSessao } from "../services/sessao";
+import { resumir, TIPOS } from "../services/relatorioService";
+import { horarioTotem } from "../utils/horario";
+import { horaCompleta } from "../utils/formatar";
 import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 import "../styles/relatorios.css";
 
-const gestor = {
-  nome: "Camila Borges",
-  funcao: "Gestão, relatórios",
-};
-
 const abas = [
   { id: "diario", rotulo: "Diário" },
   { id: "mensal", rotulo: "Mensal" },
+  { id: "detalhado", rotulo: "Detalhado" },
   { id: "auditoria", rotulo: "Auditoria" },
 ];
 
-const dataHoje = new Date().toLocaleDateString("pt-BR", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
-
 function CartaoIndicador({ rotulo, valor }) {
   return (
-    <article className="relatorio__indicador">
-      <p className="relatorio__indicador-rotulo">{rotulo}</p>
-      <p className="relatorio__indicador-valor">{valor}</p>
+    <article className="relatorio_indicador">
+      <p className="relatorio_indicador-rotulo">{rotulo}</p>
+      <p className="relatorio_indicador-valor">{valor}</p>
     </article>
   );
 }
 
-export default function Relatorios() {
-  const [aba, setAba] = useState("diario");
-  const { diario, mensal, auditoria } = useRelatorios();
-
-  const resumo = useMemo(
-    () => (aba === "mensal" ? mensal : diario),
-    [aba, diario, mensal]
+function Tabela({ colunas, linhas, vazio }) {
+  if (linhas.length === 0) return <p className="vazio">{vazio}</p>;
+  return (
+    <div className="relatorio_tabela-envolve">
+      <table className="relatorio_tabela">
+        <thead><tr>{colunas.map((c) => <th key={c}>{c}</th>)}</tr></thead>
+        <tbody>{linhas.map(([chave, ...celulas]) => (
+          <tr key={chave}>{celulas.map((c, i) => <td key={i}>{i === 0 ? <strong>{c}</strong> : c}</td>)}</tr>
+        ))}</tbody>
+      </table>
+    </div>
   );
+}
+
+export default function Relatorios() {
+  const sessao = lerSessao();
+  const { senhas } = useFila();
+  const [aba, setAba] = useState("diario");
+  const [filtroTipo, setFiltroTipo] = useState("TODOS");
+
+  const contexto = horarioTotem();
+  const { dia, aberto } = contexto;
+  const resumo = useMemo(
+    () => resumir(senhas, aba === "mensal" ? dia.slice(0, 4) : dia, { hoje: dia, aberto }),
+    [senhas, aba, dia, aberto],
+  );
+  const doDia = senhas.filter((s) => s.numero.startsWith(dia));
+  const detalhe = doDia.filter((s) => filtroTipo === "TODOS" || s.tipo === filtroTipo);
+  const auditoria = doDia.filter((s) => s.chamadas.length > 0);
 
   return (
     <div className="pagina">
       <Cabecalho>
-        <InfoUsuario nomeUsuario={gestor.nome} funcao={gestor.funcao} />
+        <InfoUsuario nomeUsuario={sessao.nome} funcao={`${sessao.funcao}, relatórios`} />
       </Cabecalho>
 
-      <main className="pagina__corpo">
-        <div className="painel__cabecalho">
-          <div>
-            <h1 className="painel__titulo">Relatórios</h1>
-            <p className="painel__subtitulo">
-              Acompanhe o volume de senhas, atendimentos e a auditoria do
-              expediente.
-            </p>
-          </div>
-          <p className="painel__data">{dataHoje}</p>
-        </div>
+      <main className="pagina_corpo">
+        <CabecalhoPagina titulo="Relatórios" subtitulo="Dados reais gerados pelo Totem e pelo Atendimento neste navegador." />
 
-        <div className="relatorio__abas" role="tablist" aria-label="Tipo de relatório">
+        <div className="relatorio_abas" role="tablist" aria-label="Tipo de relatório">
           {abas.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={aba === item.id}
-              className={`botao ${
-                aba === item.id ? "botao--primario" : "botao--secundario"
-              }`}
-              onClick={() => setAba(item.id)}
-            >
+            <button key={item.id} type="button" role="tab" aria-selected={aba === item.id}
+              className={`botao ${aba === item.id ? "botao--primario" : "botao--secundario"}`}
+              onClick={() => setAba(item.id)}>
               {item.rotulo}
             </button>
           ))}
         </div>
 
-        {aba !== "auditoria" ? (
+        {(aba === "diario" || aba === "mensal") && (
           <>
-            <section className="relatorio__indicadores" aria-label="Indicadores">
+            <section className="relatorio_indicadores" aria-label="Indicadores">
               <CartaoIndicador rotulo="Senhas emitidas" valor={resumo.emitidas} />
               <CartaoIndicador rotulo="Atendidas" valor={resumo.atendidas} />
-              <CartaoIndicador
-                rotulo="Não compareceu"
-                valor={resumo.naoCompareceu}
-              />
+              <CartaoIndicador rotulo="Não compareceu" valor={resumo.naoCompareceu} />
               <CartaoIndicador rotulo="Descartadas" valor={resumo.descartadas} />
               <CartaoIndicador rotulo="Tempo médio" valor={resumo.tempoMedio} />
             </section>
-
-            <section className="ficha relatorio__tabela-caixa">
-              <div className="ficha__cabecalho">
-                <h2 className="ficha__titulo">Por tipo de senha</h2>
-                <p className="ficha__senha">
-                  {aba === "diario" ? "Movimento do dia" : "Acumulado do mês"}
-                </p>
+            <section className="ficha relatorio_tabela-caixa">
+              <div className="ficha_cabecalho">
+                <h2 className="ficha_titulo">Por tipo de senha</h2>
+                <p className="ficha_senha">{aba === "diario" ? "Movimento do dia" : "Acumulado do mês"}</p>
               </div>
-
-              <div className="relatorio__tabela-envolve">
-                <table className="relatorio__tabela">
-                  <thead>
-                    <tr>
-                      <th>Tipo</th>
-                      <th>Descrição</th>
-                      <th>Emitidas</th>
-                      <th>Atendidas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resumo.porTipo.map((linha) => (
-                      <tr key={linha.tipo}>
-                        <td>
-                          <strong>{linha.tipo}</strong>
-                        </td>
-                        <td>{linha.rotulo}</td>
-                        <td>{linha.emitidas}</td>
-                        <td>{linha.atendidas}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Tabela colunas={["Tipo", "Descrição", "Emitidas", "Atendidas"]} vazio="Sem dados."
+                linhas={resumo.porTipo.map((l) => [l.tipo, l.tipo, l.rotulo, l.emitidas, l.atendidas])} />
             </section>
           </>
-        ) : (
-          <section className="ficha relatorio__tabela-caixa">
-            <div className="ficha__cabecalho">
-              <h2 className="ficha__titulo">Auditoria de chamadas</h2>
-              <p className="ficha__senha">Últimas ações registradas</p>
-            </div>
+        )}
 
-            <div className="relatorio__tabela-envolve">
-              <table className="relatorio__tabela">
-                <thead>
-                  <tr>
-                    <th>Hora</th>
-                    <th>Senha</th>
-                    <th>Ação</th>
-                    <th>Guichê</th>
-                    <th>Usuário</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditoria.map((evento, indice) => (
-                    <tr key={evento.id || `${evento.hora}-${evento.senha}-${indice}`}>
-                      <td>{evento.hora}</td>
-                      <td>
-                        <strong>{evento.senha}</strong>
-                      </td>
-                      <td>{evento.acao}</td>
-                      <td>{evento.guiche}</td>
-                      <td>{evento.usuario}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {aba === "detalhado" && (
+          <section className="ficha relatorio_tabela-caixa">
+            <div className="ficha_cabecalho">
+              <h2 className="ficha_titulo">Relatório detalhado das senhas</h2>
+              <div className="campo campo--guiche">
+                <label className="campo_rotulo" htmlFor="filtro-tipo">Tipo</label>
+                <select id="filtro-tipo" className="campo_entrada" value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
+                  <option value="TODOS">Todos</option>
+                  {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
             </div>
+            <Tabela vazio="Nenhuma senha emitida hoje. Emita uma senha no Totem."
+              colunas={["Senha", "Tipo", "Emissão", "Atendimento", "Guichê", "Estado"]}
+              linhas={detalhe.map((s) => [s.numero, s.numero, s.tipo, horaCompleta(s.emitidaEm), horaCompleta(s.iniciadaEm), s.iniciadaEm ? s.guiche : "—", s.estado.replace("_", " ")])} />
+          </section>
+        )}
+
+        {aba === "auditoria" && (
+          <section className="ficha relatorio_tabela-caixa">
+            <div className="ficha_cabecalho">
+              <h2 className="ficha_titulo">Auditoria de chamadas</h2>
+              <p className="ficha_senha">Hoje</p>
+            </div>
+            <Tabela vazio="Nenhuma chamada registrada hoje."
+              colunas={["Senha", "Atendente", "Guichê", "1ª chamada", "2ª chamada", "Início", "Fim"]}
+              linhas={auditoria.map((s) => [s.numero, s.numero, s.atendente, s.guiche, horaCompleta(s.chamadas[0]), horaCompleta(s.chamadas[1]), horaCompleta(s.iniciadaEm), horaCompleta(s.finalizadaEm)])} />
           </section>
         )}
       </main>

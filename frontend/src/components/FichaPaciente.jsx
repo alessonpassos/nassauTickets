@@ -1,173 +1,92 @@
-import { useRelatorios } from "../context/useRelatorios";
+import { useState } from "react";
+import { sequencia } from "../utils/formatar";
 
-export default function FichaPaciente({ senha, usuario, guiche }) {
-  const { registrarCadastro } = useRelatorios();
+const TIPOS = [
+  { valor: "exame", rotulo: "Exame" },
+  { valor: "exameDeSangue", rotulo: "Exame de sangue" },
+  { valor: "vacinacao", rotulo: "Vacinação" },
+  { valor: "resultado", rotulo: "Retirada de resultado" },
+];
+const SETORES = [
+  { valor: "salaDeExames", rotulo: "Sala de exames" },
+  { valor: "salaDeVacinacao", rotulo: "Sala de vacinação" },
+  { valor: "laboratorio", rotulo: "Laboratório" },
+  { valor: "recepcao", rotulo: "Recepção" },
+];
+const INICIAL = { tipoAtendimento: "", setor: "", observacao: "" };
 
-  function aoSalvar(evento) {
+// Registro do atendimento (sem dados pessoais: o cliente é anônimo — LGPD).
+export default function FichaPaciente({ senha, aoSalvar }) {
+  const [campos, setCampos] = useState(senha?.registro ?? INICIAL);
+  const [erros, setErros] = useState({});
+  const [salvo, setSalvo] = useState(false);
+  const habilitada = senha?.estado === "EM_ATENDIMENTO";
+
+  const alterar = (e) => {
+    setCampos((atual) => ({ ...atual, [e.target.name]: e.target.value }));
+    setSalvo(false);
+  };
+
+  function enviar(evento) {
     evento.preventDefault();
-    evento.stopPropagation();
-    const dados = new FormData(evento.currentTarget);
-    registrarCadastro({
-      senha,
-      usuario,
-      guiche,
-      prioridade: dados.get("prioridade"),
-      tipoAtendimento: dados.get("tipoAtendimento"),
-    });
+    const novos = {};
+    if (!campos.tipoAtendimento) novos.tipoAtendimento = "Selecione o tipo de atendimento.";
+    if (!campos.setor) novos.setor = "Selecione o setor de encaminhamento.";
+    setErros(novos);
+    if (Object.keys(novos).length) return;
+    aoSalvar(campos);
+    setSalvo(true);
   }
 
   return (
-    <form className="ficha" onSubmit={aoSalvar}>
-      <div className="ficha__cabecalho">
-        <h2 className="ficha__titulo">Ficha do paciente</h2>
-        <p className="ficha__senha">
-          Senha <strong>{senha}</strong>
+    <form className="ficha" onSubmit={enviar} noValidate>
+      <div className="ficha_cabecalho">
+        <h2 className="ficha_titulo">Registro do atendimento</h2>
+        <p className="ficha_senha">
+          {senha ? <>Senha <strong>{sequencia(senha.numero)}</strong></> : "Sem senha em atendimento"}
         </p>
       </div>
 
-      {/* ---------- Dados pessoais ---------- */}
-      <fieldset className="ficha__grupo">
-        <legend className="ficha__legenda">Dados pessoais</legend>
+      {!habilitada && (
+        <p className="msg msg--info">Inicie o atendimento de uma senha para preencher o registro.</p>
+      )}
 
-        <div className="ficha__campos">
-          <div className="campo campo--dois-tercos">
-            <label className="campo__rotulo" htmlFor="nome">
-              Nome completo
-            </label>
-            <input
-              id="nome"
-              name="nome"
-              type="text"
-              className="campo__entrada"
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="campo">
-            <label className="campo__rotulo" htmlFor="nascimento">
-              Data de nascimento
-            </label>
-            <input
-              id="nascimento"
-              name="nascimento"
-              type="date"
-              className="campo__entrada"
-            />
+      <fieldset className="ficha_grupo" disabled={!habilitada}>
+        <legend className="ficha_legenda">Atendimento</legend>
+        <div className="ficha_campos">
+          <div className="campo campo--metade">
+            <label className="campo_rotulo" htmlFor="tipoAtendimento">Tipo de atendimento</label>
+            <select id="tipoAtendimento" name="tipoAtendimento" className="campo_entrada" value={campos.tipoAtendimento} onChange={alterar} aria-invalid={!!erros.tipoAtendimento}>
+              <option value="">Selecione</option>
+              {TIPOS.map((t) => <option key={t.valor} value={t.valor}>{t.rotulo}</option>)}
+            </select>
+            {erros.tipoAtendimento && <p className="campo_erro" role="alert">{erros.tipoAtendimento}</p>}
           </div>
 
           <div className="campo campo--metade">
-            <label className="campo__rotulo" htmlFor="cpf">
-              CPF
-            </label>
-            <input
-              id="cpf"
-              name="cpf"
-              type="text"
-              inputMode="numeric"
-              placeholder="000.000.000-00"
-              className="campo__entrada"
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="campo">
-            <label className="campo__rotulo" htmlFor="sexo">
-              Sexo
-            </label>
-            <select id="sexo" name="sexo" className="campo__entrada" defaultValue="">
-              <option value="" disabled>
-                Selecione
-              </option>
-              <option value="feminino">Feminino</option>
-              <option value="masculino">Masculino</option>
-              <option value="outro">Outro</option>
+            <label className="campo_rotulo" htmlFor="setor">Encaminhar para</label>
+            <select id="setor" name="setor" className="campo_entrada" value={campos.setor} onChange={alterar} aria-invalid={!!erros.setor}>
+              <option value="">Selecione o setor</option>
+              {SETORES.map((s) => <option key={s.valor} value={s.valor}>{s.rotulo}</option>)}
             </select>
-          </div>
-
-          <div className="campo campo--dois-tercos">
-            <label className="campo__rotulo" htmlFor="telefone">
-              Telefone
-            </label>
-            <input
-              id="telefone"
-              name="telefone"
-              type="tel"
-              placeholder="(00) 00000-0000"
-              className="campo__entrada"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-      </fieldset>
-
-      {/* ---------- Atendimento ---------- */}
-      <fieldset className="ficha__grupo">
-        <legend className="ficha__legenda">Atendimento</legend>
-
-        <div className="ficha__campos">
-          <div className="campo campo--metade">
-            <label className="campo__rotulo" htmlFor="tipoAtendimento">
-              Tipo de atendimento
-            </label>
-            <select
-              id="tipoAtendimento"
-              name="tipoAtendimento"
-              className="campo__entrada"
-              defaultValue=""
-            >
-              <option value="" disabled>
-                Selecione
-              </option>
-              <option value="exame">Exame</option>
-              <option value="vacinacao">Vacinação</option>
-              <option value="exameDeSangue">Exame de sangue</option>
-              <option value="resultado">Resultado</option>
-            </select>
-          </div>
-
-          <div className="campo campo--metade">
-            <label className="campo__rotulo" htmlFor="setor">
-              Encaminhar para
-            </label>
-            <select id="setor" name="setor" className="campo__entrada" defaultValue="">
-              <option value="" disabled>
-                Selecione o setor
-              </option>
-              <option value="salaDeExames">Sala de exames</option>
-              <option value="salaDeVacinacao">Sala de vacinação</option>
-              <option value="laboratorio">Laboratório</option>
-              <option value="recepcao">Recepção</option>
-            </select>
+            {erros.setor && <p className="campo_erro" role="alert">{erros.setor}</p>}
           </div>
 
           <div className="campo campo--inteiro">
-            <span className="campo__rotulo" id="prioridade-rotulo">
-              Prioridade
-            </span>
-            <div className="opcoes" role="radiogroup" aria-labelledby="prioridade-rotulo">
-              <label className="opcao">
-                <input type="radio" name="prioridade" value="normal" defaultChecked />
-                Normal
-              </label>
-              <label className="opcao">
-                <input type="radio" name="prioridade" value="prioritario" />
-                Prioritário
-              </label>
-            </div>
-            <p className="campo__ajuda">
-              Use prioritário para idosos, gestantes e pessoas com deficiência.
-            </p>
+            <label className="campo_rotulo" htmlFor="observacao">Observação (opcional)</label>
+            <textarea id="observacao" name="observacao" rows={3} maxLength={200} className="campo_entrada" value={campos.observacao} onChange={alterar} />
+            <p className="campo_ajuda">Não informe nome, CPF ou dados de saúde.</p>
           </div>
         </div>
       </fieldset>
-      
-      <div className="ficha__rodape">
-        <button type="reset" className="botao botao--secundario">
-          Limpar ficha
+
+      {salvo && <p className="msg msg--ok" role="status">Registro salvo com sucesso.</p>}
+
+      <div className="ficha_rodape">
+        <button type="button" className="botao botao--secundario" disabled={!habilitada} onClick={() => { setCampos(INICIAL); setErros({}); setSalvo(false); }}>
+          Limpar
         </button>
-        <button type="submit" className="botao botao--primario">
-          Salvar ficha
-        </button>
+        <button type="submit" className="botao botao--primario" disabled={!habilitada}>Salvar registro</button>
       </div>
     </form>
   );

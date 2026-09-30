@@ -1,27 +1,10 @@
 import { TOTEM, TIPOS_SENHA } from "../data/totem.js";
+import { horarioTotem } from "../utils/horario.js";
+import { registrarEmitida } from "./filaService.js";
+
+export { horarioTotem };
 
 const CHAVE = "nassautickets:totem:demo:v1";
-
-export function horarioTotem(agora = new Date()) {
-  const partes = Object.fromEntries(
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: TOTEM.fusoHorario,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      hourCycle: "h23",
-    })
-      .formatToParts(agora)
-      .map(({ type, value }) => [type, value]),
-  );
-  return {
-    dia: `${partes.year.slice(-2)}${partes.month}${partes.day}`,
-    aberto:
-      Number(partes.hour) >= TOTEM.abertura &&
-      Number(partes.hour) < TOTEM.encerramento,
-  };
-}
 
 export function validarSolicitacao({ tipo } = {}) {
   const erros = {};
@@ -38,6 +21,7 @@ function lerEstado(armazenamento, dia) {
     if (!(erro instanceof SyntaxError))
       throw new Error(
         "Não foi possível acessar o armazenamento deste navegador. Permita o armazenamento e tente novamente.",
+        { cause: erro },
       );
   }
   if (!estado || estado.dia !== dia)
@@ -106,6 +90,8 @@ export async function emitirSenhaLocal(dados, opcoes = {}) {
         "Não foi possível salvar a senha. Libere espaço ou permita o armazenamento do navegador e tente novamente.",
       );
     }
+    // Publica a senha na fila compartilhada (atendente, painel e relatórios).
+    registrarEmitida(senha);
     return senha;
   };
   if (globalThis.navigator?.locks && !opcoes.armazenamento) {

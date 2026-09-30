@@ -14,7 +14,7 @@
 .totem-marca {
   text-align: center;
 }
-.totem-marca__identidade {
+.totem-marca_identidade {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,14 +73,14 @@
   text-align: center;
   padding: 1.5rem;
 }
-.totem-qr__codigo {
+.totem-qr_codigo {
   width: min(100%, 244px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
   margin: 0.75rem auto 0.35rem;
 }
-.totem-qr__codigo img {
+.totem-qr_codigo img {
   display: block;
   width: 100%;
   height: auto;
@@ -91,7 +91,7 @@
   color: var(--cor-tinta-suave);
   margin: 0;
 }
-.totem-qr__codigo p {
+.totem-qr_codigo p {
   margin: 0 0 0.6rem;
 }
 .totem-emissao > p {
@@ -151,7 +151,7 @@
 .totem-comprovante {
   text-align: center;
 }
-.totem-comprovante__numero {
+.totem-comprovante_numero {
   display: block;
   color: var(--cor-ciano-900);
   font-size: clamp(3rem, 7vw, 4rem);
@@ -160,12 +160,12 @@
   margin: 0.6rem 0 0.3rem;
   font-variant-numeric: tabular-nums;
 }
-.totem-comprovante__codigo {
+.totem-comprovante_codigo {
   margin: 0;
   color: var(--cor-tinta-suave);
   font-size: 0.875rem;
 }
-.totem-comprovante__tipo {
+.totem-comprovante_tipo {
   margin: 0.9rem 0 0.2rem;
   font-weight: 600;
 }
@@ -173,18 +173,18 @@
   font-size: 0.8125rem;
   color: var(--cor-tinta-suave);
 }
-.totem-comprovante__instrucao {
+.totem-comprovante_instrucao {
   color: var(--cor-tinta-suave);
   font-size: 0.875rem;
   margin: 1rem 0;
 }
-.totem-comprovante__acoes {
+.totem-comprovante_acoes {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.65rem;
 }
-.totem-comprovante__acoes .botao {
+.totem-comprovante_acoes .botao {
   gap: 0.5rem;
 }
 .totem-feedback {
@@ -206,7 +206,7 @@
 .totem-rodape span {
   padding: 0 0.5rem;
 }
-.totem-rodape__demo {
+.totem-rodape_demo {
   font-size: 0.75rem;
 }
 .totem-indisponivel {
@@ -247,7 +247,7 @@
     font-size: 1.75rem;
     margin-bottom: 1.4rem;
   }
-  .totem-marca__identidade {
+  .totem-marca_identidade {
     font-size: 1.45rem;
   }
   .totem-atendimento {

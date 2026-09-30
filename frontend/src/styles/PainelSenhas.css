@@ -1,36 +1,46 @@
-/* ───────────── layout geral ───────────── */
-
 .painel {
-  min-height: 100vh;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: #063b46;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
-.painel__conteudo {
+.painel *,
+.painel *::before,
+.painel *::after {
+  box-sizing: border-box;
+}
+
+.painel_conteudo {
   flex: 1;
+  min-height: 0;
   display: flex;
-  min-height: 100vh;
+  overflow: hidden;
 }
 
-.painel__coluna-principal {
+.painel_coluna-principal {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #eaf6f7;
+  overflow: hidden;
 }
 
-.painel__corpo {
+.painel_corpo {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr 340px;
 }
 
-
-/* Texto só pra leitor de tela, invisível na tela */
-.painel__sr {
+.painel_sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -39,19 +49,19 @@
   white-space: nowrap;
 }
 
-/* ───────────── coluna principal ───────────── */
-
-.painel__principal {
+.painel_principal {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 48px 56px;
-  gap: 40px;
+  padding: clamp(24px, 4vw, 48px) clamp(24px, 4vw, 56px);
+  gap: clamp(16px, 2vw, 40px);
+  overflow: hidden;
 }
 
-/* ───────────── estado de espera ───────────── */
-
-.painel__espera {
+.painel_espera {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,129 +71,163 @@
   color: #4c7480;
 }
 
-.painel__espera-titulo {
-  font-size: 28px;
+.painel_espera-titulo {
+  font-size: clamp(22px, 2vw, 28px);
   font-weight: 700;
   color: #063b46;
 }
 
-.painel__espera-texto {
-  font-size: 18px;
+.painel_espera-texto {
+  font-size: clamp(16px, 1.5vw, 18px);
   max-width: 420px;
 }
 
-/* ───────────── card da chamada ───────────── */
-
-.painel__chamada {
+.painel_chamada {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(16px, 2vw, 24px);
   background: #ffffff;
   border-radius: 24px;
-  padding: 48px;
+  padding: clamp(24px, 4vw, 48px);
   box-shadow: 0 4px 24px rgba(6, 59, 70, 0.08);
   border: 2px solid transparent;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
-/* Destaque animado quando a senha acabou de ser chamada */
-.painel__chamada--nova {
+.painel_chamada--nova {
   border-color: #7fdbe8;
   box-shadow: 0 8px 32px rgba(6, 59, 70, 0.16);
   animation: piscar 1.4s ease-in-out 2;
 }
 
 @keyframes piscar {
-  0%, 100% { background: #ffffff; }
-  50% { background: #eafcff; }
+  0%,
+  100% {
+    background: #ffffff;
+  }
+
+  50% {
+    background: #eafcff;
+  }
 }
 
-.painel__linha-topo {
+.painel_linha-topo {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
-.painel__rotulo {
-  font-size: 20px;
+.painel_rotulo {
+  margin: 0;
+  font-size: clamp(16px, 1.5vw, 20px);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #4c7480;
 }
 
-.painel__status {
+.painel_status {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
+  font-size: clamp(13px, 1.3vw, 16px);
   font-weight: 600;
   color: #4c7480;
   background: #eaf6f7;
   padding: 6px 16px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
-.painel__status--ativo {
+.painel_status--ativo {
   color: #0a7a52;
   background: #e3f8ee;
 }
 
-.painel__ponto {
+.painel_ponto {
   width: 8px;
   height: 8px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: #0a7a52;
   animation: pulsar 1.2s ease-in-out infinite;
 }
 
 @keyframes pulsar {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
 }
 
-/* Número da senha, gigante */
-.painel__senha {
-  font-size: 160px;
+.painel_senha {
+  margin: 0;
+  max-width: 100%;
+  text-align: center;
+  font-size: clamp(72px, 11vw, 160px);
   font-weight: 800;
-  line-height: 1;
+  line-height: 0.9;
   color: #063b46;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  flex-shrink: 1;
 }
 
-.painel__senha[data-tamanho="longo"] {
-  font-size: 120px;
+.painel_senha[data-tamanho="longo"] {
+  font-size: clamp(64px, 8vw, 120px);
 }
 
-.painel__senha[data-tamanho="muito-longo"] {
-  font-size: 90px;
+.painel_senha[data-tamanho="muito-longo"] {
+  font-size: clamp(52px, 6vw, 90px);
 }
 
-.painel__destino {
+.painel_destino {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 6px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
-.painel__local {
-  font-size: 36px;
+.painel_local {
+  margin: 0;
+  font-size: clamp(24px, 2.8vw, 36px);
   font-weight: 700;
   color: #063b46;
 }
 
-.painel__nome {
-  font-size: 22px;
+.painel_nome {
+  margin: 0;
+  font-size: clamp(18px, 1.8vw, 22px);
   color: #4c7480;
 }
 
-.painel__detalhes {
+.painel_detalhes {
   display: flex;
+  justify-content: center;
   gap: 10px;
   margin-top: 8px;
 }
 
-.painel__etiqueta {
+.painel_etiqueta {
   background: #fdecd2;
   color: #9a5b00;
   font-size: 14px;
@@ -192,7 +236,7 @@
   border-radius: 999px;
 }
 
-.painel__setor {
+.painel_setor {
   background: #eaf6f7;
   color: #4c7480;
   font-size: 14px;
@@ -201,20 +245,22 @@
   border-radius: 999px;
 }
 
-/* ───────────── rodapé de aviso ───────────── */
-
-.painel__aviso {
+.painel_aviso {
+  flex-shrink: 0;
   text-align: center;
-  font-size: 16px;
+  font-size: clamp(13px, 1.3vw, 16px);
   color: #4c7480;
   padding-top: 16px;
   border-top: 1px solid #d6ebee;
 }
 
-/* ───────────── coluna do histórico ───────────── */
+.painel_audio {
+  flex-shrink: 0;
+}
 
-.painel__historico {
+.painel_historico {
   width: 340px;
+  height: 100%;
   flex-shrink: 0;
   background: var(--cor-ciano-950);
   color: #ffffff;
@@ -222,22 +268,28 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  overflow: hidden;
 }
 
-.painel__historico-titulo {
+.painel_historico-titulo {
+  margin: 0;
   font-size: 20px;
   font-weight: 700;
   color: #e9ecec;
+  flex-shrink: 0;
 }
 
-.painel__lista {
+.painel_lista {
+  margin: 0;
+  padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow: hidden;
 }
 
-.painel__item {
+.painel_item {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -246,62 +298,46 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.painel__item-senha {
+.painel_item-senha {
   font-size: 24px;
   font-weight: 800;
   color: #7fdbe8;
 }
 
-.painel__item-info {
+.painel_item-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.painel__item-local {
+.painel_item-local {
   font-size: 15px;
   font-weight: 600;
 }
 
-.painel__item-prioridade {
+.painel_item-prioridade {
   font-size: 12px;
   color: #fdb872;
   font-weight: 700;
 }
 
-.painel__item-hora {
+.painel_item-hora {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
 }
 
-.painel__vazio {
+.painel_vazio {
+  margin: 0;
   font-size: 15px;
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* ───────────── responsivo (telas menores) ───────────── */
-
-@media (max-width: 900px) {
-  .painel__conteudo {
-    flex-direction: column;
-  }
-
-  .painel__historico {
-    width: 100%;
-  }
-
-  .painel__senha {
-    font-size: 100px;
-  }
-}
-
-/* ───────────── relógio dentro do cabeçalho ───────────── */
-
-.painel__relogio {
+.painel_relogio {
   text-align: right;
 }
 
-.painel__hora {
+.painel_hora {
   display: block;
   font-size: 24px;
   font-weight: 700;
@@ -309,9 +345,37 @@
   line-height: 1.2;
 }
 
-.painel__data {
+.painel_data {
   margin: 0;
   font-size: 16px;
   color: rgba(255, 255, 255, 0.854);
   text-transform: capitalize;
+}
+
+@media (max-width: 900px) {
+  .painel_conteudo {
+    flex-direction: column;
+  }
+
+  .painel_coluna-principal {
+    min-height: 65dvh;
+  }
+
+  .painel_historico {
+    width: 100%;
+    height: 35dvh;
+    padding: 24px;
+  }
+
+  .painel_senha {
+    font-size: clamp(64px, 15vw, 100px);
+  }
+
+  .painel_senha[data-tamanho="longo"] {
+    font-size: clamp(56px, 12vw, 84px);
+  }
+
+  .painel_senha[data-tamanho="muito-longo"] {
+    font-size: clamp(48px, 10vw, 72px);
+  }
 }

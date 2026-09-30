@@ -29,7 +29,7 @@ export default function QrCodeTotem({ caminho }) {
   return (
     <section className="totem-qr" aria-labelledby="retirar-celular">
       <h2 id="retirar-celular">Prefere usar o celular?</h2>
-      <div className="totem-qr__codigo">
+      <div className="totem-qr_codigo">
         {codigo ? (
           <img
             src={codigo}

@@ -4,8 +4,8 @@ export const TOTEM = {
   nome: "Recepção principal",
   unidade: "Laboratório de Análises Clínicas",
   fusoHorario: "America/Sao_Paulo",
-  abertura: 7,
-  encerramento: 17,
+  abertura: 0,
+  encerramento: 24,
 };
 
 export const TIPOS_SENHA = [
@@ -28,3 +28,5 @@ export const TIPOS_SENHA = [
     icone: "documento",
   },
 ];
+
+export const ROTULO_TIPO = { SP: "Prioritária", SE: "Retirada de exames", SG: "Geral" };

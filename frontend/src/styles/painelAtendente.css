@@ -3,7 +3,7 @@
 Cabeçalho do painel
 */
 
-.painel__cabecalho {
+.atend_cabecalho {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -11,19 +11,19 @@ Cabeçalho do painel
   margin-bottom: 1.5rem;
 }
 
-.painel__titulo {
+.atend_titulo {
   margin: 0;
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--cor-ciano-900);
 }
 
-.painel__subtitulo {
+.atend_subtitulo {
   margin: 0.15rem 0 0;
   color: var(--cor-tinta-suave);
 }
 
-.painel__data {
+.atend_data {
   margin: 0;
   font-size: 0.95rem;
   color: var(--cor-tinta-suave);
@@ -33,14 +33,14 @@ Cabeçalho do painel
 Grade: coluna lateral + ficha
 */
 
-.painel__grade {
+.atend_grade {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
   gap: 1.5rem;
   align-items: start;
 }
 
-.painel__lateral {
+.atend_lateral {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -61,14 +61,14 @@ Senha atual
   outline-color: #fff;
 }
 
-.senha-atual__rotulo {
+.senha-atual_rotulo {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--cor-ciano-200);
 }
 
-.senha-atual__codigo {
+.senha-atual_codigo {
   margin: 0.25rem 0 0;
   font-size: 4.5rem;
   font-weight: 700;
@@ -77,7 +77,7 @@ Senha atual
   font-variant-numeric: tabular-nums;
 }
 
-.senha-atual__detalhe {
+.senha-atual_detalhe {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -85,13 +85,13 @@ Senha atual
   font-size: 1.05rem;
 }
 
-.senha-atual__espera {
+.senha-atual_espera {
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
   color: var(--cor-ciano-200);
 }
 
-.senha-atual__acoes {
+.senha-atual_acoes {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -109,30 +109,30 @@ Fila de espera
   border-radius: var(--raio-painel);
 }
 
-.fila__cabecalho {
+.fila_cabecalho {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   padding: 0 1.25rem 0.75rem;
 }
 
-.fila__titulo {
+.fila_titulo {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.fila__contagem {
+.fila_contagem {
   font-size: 0.9rem;
   color: var(--cor-tinta-suave);
 }
 
-.fila__lista {
+.fila_lista {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.fila__item {
+.fila_item {
   display: grid;
   grid-template-columns: 4.5rem 1fr auto;
   align-items: center;
@@ -142,17 +142,17 @@ Fila de espera
   border-left: 4px solid transparent;
 }
 
-.fila__item--prioridade {
+.fila_item--prioridade {
   border-left-color: var(--cor-prioridade);
 }
 
-.fila__codigo {
+.fila_codigo {
   font-size: 1.1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.fila__tipo {
+.fila_tipo {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -160,7 +160,7 @@ Fila de espera
   font-size: 0.95rem;
 }
 
-.fila__espera {
+.fila_espera {
   font-size: 0.9rem;
   color: var(--cor-tinta-suave);
 }
@@ -176,7 +176,7 @@ Ficha do paciente
   border-radius: var(--raio-painel);
 }
 
-.ficha__cabecalho {
+.ficha_cabecalho {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -185,29 +185,29 @@ Ficha do paciente
   border-bottom: 1px solid var(--cor-borda);
 }
 
-.ficha__titulo {
+.ficha_titulo {
   margin: 0;
   font-size: 1.35rem;
 }
 
-.ficha__senha {
+.ficha_senha {
   margin: 0;
   color: var(--cor-tinta-suave);
 }
 
-.ficha__senha strong {
+.ficha_senha strong {
   color: var(--cor-tinta);
   font-variant-numeric: tabular-nums;
 }
 
-.ficha__grupo {
+.ficha_grupo {
   min-width: 0;
   margin: 0;
   padding: 1.25rem 0 0;
   border: 0;
 }
 
-.ficha__legenda {
+.ficha_legenda {
   margin-bottom: 0.9rem;
   padding: 0;
   font-size: 1.05rem;
@@ -215,13 +215,13 @@ Ficha do paciente
   color: var(--cor-primaria-escura);
 }
 
-.ficha__campos {
+.ficha_campos {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1rem 1.25rem;
 }
 
-.ficha__rodape {
+.ficha_rodape {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
@@ -253,18 +253,18 @@ Campos
   grid-column: 1 / -1;
 }
 
-.campo__rotulo {
+.campo_rotulo {
   font-size: 0.9rem;
   font-weight: 600;
 }
 
-.campo__ajuda {
+.campo_ajuda {
   margin: 0;
   font-size: 0.85rem;
   color: var(--cor-tinta-suave);
 }
 
-.campo__entrada {
+.campo_entrada {
   width: 100%;
   min-height: 44px;
   padding: 0.55rem 0.75rem;
@@ -273,15 +273,15 @@ Campos
   border-radius: var(--raio-campo);
 }
 
-.campo__entrada::placeholder {
+.campo_entrada::placeholder {
   color: #5f7f88;
 }
 
-.campo__entrada:hover {
+.campo_entrada:hover {
   border-color: var(--cor-primaria);
 }
 
-.campo__entrada--area {
+.campo_entrada--area {
   min-height: 88px;
   resize: vertical;
 }

@@ -1,148 +1,217 @@
-import { useEffect, useRef, useState } from 'react';
-import Cabecalho from '../components/Cabecalho';
-import Relogio, { formatarHora } from '../components/Relogio';
-import '../styles/PainelSenhas.css';
+import { useEffect, useMemo, useRef, useState } from "react";
+import Cabecalho from "../components/Cabecalho";
+import Relogio from "../components/Relogio";
+import useFila from "../hooks/useFila";
+import { formatarHora, sequencia } from "../utils/formatar";
+import { narrarChamada, tocarSinal } from "../utils/audio";
+import "../styles/PainelSenhas.css";
+
+const tamanhoDaSenha = (s) =>
+  s.length > 8 ? "muito-longo" : s.length > 6 ? "longo" : "normal";
 
 export default function PainelSenhas({
-  maxHistorico = 6,
-  aviso = 'Tenha um documento com foto em mãos ao ser chamado.',
-  abreviarNomes = true,
+  maxHistorico = 5,
+  aviso = "Tenha um documento com foto em mãos ao ser chamado.",
   som = false,
   narrar = false,
   duracaoChamada = 10000,
 }) {
-  const [chamadaAtual, setChamadaAtual] = useState(null);
-  const [historico, setHistorico] = useState([]);
+  const { senhas } = useFila();
+  const [audioLigado, setAudioLigado] = useState(false);
 
-  useEffect(() => {
-    async function buscarEstado() {
-      try {
-        const resposta = await fetch('http://localhost:3000/api/senhas/atual');
-        const dados = await resposta.json();
-        setChamadaAtual(dados.chamadaAtual);
-        setHistorico(dados.historico.map((item) => ({ ...item, horario: new Date(item.horario) })));
-      } catch (erro) {
-        console.error('Não foi possível atualizar o painel:', erro);
-      }
-    }
-    buscarEstado();
-    const intervalo = setInterval(buscarEstado, 3000);
-    return () => clearInterval(intervalo);
-  }, []);
+  const chamadas = useMemo(
+    () =>
+      senhas
+        .filter((s) => s.chamadas?.length)
+        .map((s) => ({
+          id: `${s.numero}#${s.chamadas.length}`,
+          numero: s.numero,
+          senha: sequencia(s.numero),
+          tipo: s.tipo,
+          guiche: s.guiche,
+          local: `Guichê ${s.guiche}`,
+          prioritario: s.tipo === "SP",
+          ultima: s.estado === "CHAMADA_NOVAMENTE",
+          horario: new Date(s.chamadas.at(-1)),
+        }))
+        .sort((a, b) => b.horario - a.horario)
+        .slice(0, maxHistorico),
+    [senhas, maxHistorico]
+  );
 
-  const idAtual = chamadaAtual ? (chamadaAtual.id ?? chamadaAtual.senha) : null;
+  const chamadaAtual = chamadas[0] ?? null;
+  const idAtual = chamadaAtual?.id ?? null;
 
   const [idVisto, setIdVisto] = useState(idAtual);
   const [chamando, setChamando] = useState(false);
-  if (idAtual !== idVisto) {
-    setIdVisto(idAtual);
-    setChamando(idAtual !== null);
-  }
+
+  useEffect(() => {
+    if (idAtual !== idVisto) {
+      setIdVisto(idAtual);
+      setChamando(idAtual !== null);
+    }
+  }, [idAtual, idVisto]);
 
   const chamadaRef = useRef(chamadaAtual);
+
   useEffect(() => {
     chamadaRef.current = chamadaAtual;
-  });
+  }, [chamadaAtual]);
 
   useEffect(() => {
     if (!chamando) return;
+
     const fim = setTimeout(() => setChamando(false), duracaoChamada);
+
     return () => clearTimeout(fim);
   }, [chamando, idAtual, duracaoChamada]);
 
   useEffect(() => {
-    if (!chamando || !chamadaRef.current) return;
+    if (!chamando || !audioLigado || !chamadaRef.current) return;
+
     if (som) tocarSinal();
-    const fala = narrar ? setTimeout(() => narrarChamada(chamadaRef.current), 1400) : null;
-    return () => clearTimeout(fala);
-  }, [idAtual, chamando, som, narrar]);
 
-  const ultimas = historico.slice(0, maxHistorico);
-  const nomeExibido = chamadaAtual?.nome
-    ? abreviarNomes
-      ? abreviarNome(chamadaAtual.nome)
-      : chamadaAtual.nome
-    : null;
+    const fala = narrar
+      ? setTimeout(() => narrarChamada(chamadaRef.current), 1400)
+      : null;
 
-    return (
-  <div className="painel" style={{ '--linhas': maxHistorico }}>
-    <p className="painel__sr" role="status" aria-live="polite">
-      {chamadaAtual ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}` : ''}
-    </p>
+    return () => {
+      if (fala) clearTimeout(fala);
+    };
+  }, [idAtual, chamando, audioLigado, som, narrar]);
 
-    <div className="painel__conteudo">
-      <div className="painel__coluna-principal">
-        <Cabecalho mostrarMenu={false}>
-          <Relogio />
-        </Cabecalho>
+  return (
+    <div className="painel" style={{ "--linhas": maxHistorico }}>
+      <p className="painel_sr" role="status" aria-live="polite">
+        {chamadaAtual
+          ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}`
+          : ""}
+      </p>
 
-        <main className="painel__principal" data-chamando={chamando}>
-          {chamadaAtual ? (
-            <section
-              key={idAtual}
-              className={`painel__chamada${chamando ? ' painel__chamada--nova' : ''}`}
-            >
-              <div className="painel__linha-topo">
-                <p className="painel__rotulo">Senha</p>
-                <p className={`painel__status${chamando ? ' painel__status--ativo' : ''}`}>
-                  {chamando && <span className="painel__ponto" aria-hidden="true" />}
-                  {chamando ? 'Chamando agora' : 'Última chamada'}
-                </p>
-              </div>
+      <div className="painel_conteudo">
+        <div className="painel_coluna-principal">
+          <Cabecalho mostrarMenu={false}>
+            <Relogio />
+          </Cabecalho>
 
-              <p className="painel__senha" data-tamanho={tamanhoDaSenha(chamadaAtual.senha)}>
-                {chamadaAtual.senha}
-              </p>
+          <main className="painel_principal" data-chamando={chamando}>
+            {chamadaAtual ? (
+              <section
+                key={idAtual}
+                className={`painel_chamada${
+                  chamando ? " painel_chamada--nova" : ""
+                }`}
+              >
+                <div className="painel_linha-topo">
+                  <p className="painel_rotulo">Senha</p>
 
-              <div className="painel__destino">
-                <p className="painel__local">{chamadaAtual.local}</p>
-                {nomeExibido && <p className="painel__nome">{nomeExibido}</p>}
-                {(chamadaAtual.prioritario || chamadaAtual.setor) && (
-                  <div className="painel__detalhes">
-                    {chamadaAtual.prioritario && (
-                      <span className="painel__etiqueta">Prioritário</span>
+                  <p
+                    className={`painel_status${
+                      chamando ? " painel_status--ativo" : ""
+                    }`}
+                  >
+                    {chamando && (
+                      <span
+                        className="painel_ponto"
+                        aria-hidden="true"
+                      />
                     )}
-                    {chamadaAtual.setor && <span className="painel__setor">{chamadaAtual.setor}</span>}
-                  </div>
-                )}
-              </div>
-            </section>
-          ) : (
-            <section className="painel__espera">
-              <p className="painel__espera-titulo">Aguarde ser chamado</p>
-              <p className="painel__espera-texto">
-                Sua senha aparecerá aqui, junto com o local de atendimento.
-              </p>
-            </section>
-          )}
 
-          {aviso && <footer className="painel__aviso">{aviso}</footer>}
-        </main>
-      </div>
+                    {chamadaAtual.ultima
+                      ? "Última chamada"
+                      : chamando
+                      ? "Chamando agora"
+                      : "Chamada recente"}
+                  </p>
+                </div>
 
-      <aside className="painel__historico" aria-label="Chamadas anteriores">
-        <h2 className="painel__historico-titulo">Chamadas anteriores</h2>
+                <p
+                  className="painel_senha"
+                  data-tamanho={tamanhoDaSenha(chamadaAtual.senha)}
+                >
+                  {chamadaAtual.senha}
+                </p>
 
-        {ultimas.length > 0 ? (
-          <ol className="painel__lista">
-            {ultimas.map((item, i) => (
-              <li key={item.id ?? `${item.senha}-${i}`} className="painel__item">
-                <span className="painel__item-senha">{item.senha}</span>
-                <span className="painel__item-info">
-                  <span className="painel__item-local">{item.local}</span>
-                  {item.prioritario && (
-                    <span className="painel__item-prioridade">Prioritário</span>
+                <div className="painel_destino">
+                  <p className="painel_local">{chamadaAtual.local}</p>
+
+                  {chamadaAtual.prioritario && (
+                    <div className="painel_detalhes">
+                      <span className="painel_etiqueta">
+                        Prioritário
+                      </span>
+                    </div>
                   )}
-                </span>
-                <time className="painel__item-hora">{formatarHora(item.horario)}</time>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="painel__vazio">As últimas senhas chamadas aparecerão aqui.</p>
-        )}
-      </aside>
+                </div>
+              </section>
+            ) : (
+              <section className="painel_espera">
+                <p className="painel_espera-titulo">
+                  Aguarde ser chamado
+                </p>
+
+                <p className="painel_espera-texto">
+                  Sua senha aparecerá aqui, junto com o guichê de
+                  atendimento.
+                </p>
+              </section>
+            )}
+
+            {aviso && <footer className="painel_aviso">{aviso}</footer>}
+
+            {!audioLigado && (
+              <button
+                type="button"
+                className="botao botao--secundario painel_audio"
+                onClick={() => setAudioLigado(true)}
+              >
+                Ativar som das chamadas
+              </button>
+            )}
+          </main>
+        </div>
+
+        <aside
+          className="painel_historico"
+          aria-label="Últimas chamadas"
+        >
+          <h2 className="painel_historico-titulo">
+            Últimas 5 chamadas
+          </h2>
+
+          {chamadas.length > 0 ? (
+            <ol className="painel_lista">
+              {chamadas.map((item) => (
+                <li key={item.id} className="painel_item">
+                  <span className="painel_item-senha">
+                    {item.senha}
+                  </span>
+
+                  <span className="painel_item-info">
+                    <span className="painel_item-local">
+                      {item.local}
+                    </span>
+
+                    {item.prioritario && (
+                      <span className="painel_item-prioridade">
+                        Prioritário
+                      </span>
+                    )}
+                  </span>
+
+                  <time className="painel_item-hora">
+                    {formatarHora(item.horario)}
+                  </time>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="painel_vazio">
+              As últimas senhas chamadas aparecerão aqui.
+            </p>
+          )}
+        </aside>
+      </div>
     </div>
-  </div>
-);
+  );
 }

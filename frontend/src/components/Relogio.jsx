@@ -1,15 +1,5 @@
 import { useEffect, useState } from "react";
 
-export function formatarHora(valor) {
-  if (valor instanceof Date) {
-    return valor.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-  return valor ?? "";
-}
-
 export default function Relogio() {
   const [agora, setAgora] = useState(() => new Date());
 
@@ -19,14 +9,14 @@ export default function Relogio() {
   }, []);
 
   return (
-    <div className="painel__relogio">
-      <time className="painel__hora" dateTime={agora.toISOString()}>
+    <div className="painel_relogio">
+      <time className="painel_hora" dateTime={agora.toISOString()}>
         {agora.toLocaleTimeString("pt-BR", {
           hour: "2-digit",
           minute: "2-digit",
         })}
       </time>
-      <p className="painel__data">
+      <p className="painel_data">
         {agora.toLocaleDateString("pt-BR", {
           weekday: "long",
           day: "numeric",
