@@ -2,105 +2,96 @@
 
 ## Visão geral
 
+```text
+Usuário (totem / painel / guichê / gestor)
+          │
+          ▼
+   Front-end React (frontend/)
+          │
+          │  localStorage / sessionStorage (AV1)
+          ▼
+  API REST Express (backend/)
+          │
+          ▼
+      MySQL 8.0
 ```
-Cliente (totem / painel)     Atendente / Gestor
-            \                      /
-             \                    /
-              v                  v
-           Front-end React (Vite)
-                    |
-                    | HTTP JSON (fetch)
-                    v
-           API REST (Node.js + Express)
-                    |
-                    v
-                MySQL 8.0
+
+## Estrutura real do projeto
+
+```text
+nassauTickets-dev/
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── data/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── styles/
+│   │   └── utils/
+│   ├── package.json
+│   ├── vite.config.js
+│   └── index.html
+├── backend/
+│   ├── routes/
+│   ├── config/
+│   ├── public/
+│   ├── views/
+│   ├── app.js
+│   └── package.json
+├── docs/
+└── README.md
 ```
 
 ## Camadas do front-end
 
-```
-Usuário
-   ↓
-Frontend React
-   ↓
-React Router
-   ↓
-Páginas e componentes
-   ↓
-Services (fetch)
-```
+| Camada | Responsabilidade |
+| ------ | ---------------- |
+| `pages/` | telas de início, login, totem, atendimento, painel, relatórios |
+| `components/` | blocos reutilizáveis e roteamento protegido |
+| `services/` | lógica de fila, sessão, relatórios, totem e adaptação local |
+| `hooks/` | sincronização e leitura da fila compartilhada |
+| `styles/` | CSS por tela e layout |
+| `utils/` | horário, formatação, audio |
+
+## Camadas do back-end
 
 | Camada | Responsabilidade |
 | ------ | ---------------- |
-| Usuário | Totem, painel, guichê, gestor |
-| Front-end React | Telas, estados da UI, áudio |
-| React Router | Navegação e rotas protegidas (planejado) |
-| Páginas e componentes | Totem, painel, login, atendimento |
-| Services | Comunicação com a API (planejado) |
-
-## Estrutura de pastas (repositório atual)
-
-```
-nassauTickets/
-├── README.md
-├── LICENSE
-├── .gitignore
-├── docs/                 ← documentação (INDICE.md)
-├── front-end/            ← UI (esqueleto)
-└── back-end/
-    └── docs/             ← MER, UML, mockups, branding, requisitos
-```
-
-## Estrutura esperada (planejada)
-
-```
-front-end/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── services/
-│   ├── hooks/
-│   └── styles/
-├── package.json
-└── ...
-
-back-end/
-├── src/
-│   ├── controllers/
-│   ├── routes/
-│   ├── services/
-│   ├── models/
-│   ├── middlewares/
-│   ├── database/
-│   ├── utils/
-│   └── app.js
-├── tests/
-├── .env.example
-└── package.json
-```
+| `routes/` | `health`, `guiches`, `senhas` |
+| `config/database.js` | conexão com MySQL via pool |
+| `app.js` | inicialização do Express e middleware |
+| `views/` | páginas padrão do exemplo Express |
 
 ## Fluxo principal
 
-```
-Cliente no totem escolhe SP, SE ou SG
-        ↓
-API gera senha YYMMDD-PPSQ e coloca na fila
-        ↓
-Atendente autenticado pede a próxima senha
-        ↓
-Regra SP → SE|SG com reserva atômica
-        ↓
-Painel (5 últimas) + áudio
-        ↓
-Início e fim do atendimento (ou NÃO_COMPARECEU)
-        ↓
-Relatórios e auditoria
+```text
+Cliente acessa o Totem
+    ↓
+Emite senha (SP/SE/SG)
+    ↓
+Dados ficam em localStorage (AV1)
+    ↓
+Atendente entra localmente
+    ↓
+Chama a próxima senha e controla o guichê
+    ↓
+Painel mostra as 5 últimas chamads
+    ↓
+Relatórios exibem indicadores do dia/mês
 ```
 
-## Integração
+## Integração real
 
-- Front-end consome a API REST em JSON.
-- CORS e URL base (`VITE_API_URL`) a definir.
-- Endpoints públicos: emissão no totem, painel (a confirmar).
-- Endpoints protegidos: fila, chamada, atendimento, relatórios.
+- O front-end atual usa `localStorage` e `sessionStorage` para simular a aplicação sem integração com a API.
+- O back-end atual consulta MySQL real para guichês e senhas, mas não há autenticação ni backend nem script SQL versionado.
+- O padrão de arquitetura para AV2 é manter o front-end em React e trocar a camada de dados por integração REST ao back-end Node.js/Express.
+
+## Status da arquitetura
+
+- Implementado: front-end UI local e modelo de fluxo de atendimento
+- Implementado no back-end: health check, guichês e rotas de senhas
+- Parcial: autenticação, usuários e persistência completa
+- Planejado: autenticação real do gestor/atendente e integração completa com MySQL em produção
+

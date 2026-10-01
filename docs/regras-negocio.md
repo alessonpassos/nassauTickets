@@ -1,90 +1,87 @@
 # Regras de negócio
 
+## Visão geral
+
+O projeto usa três tipos de senha: `SP`, `SE` e `SG`. A lógica de fila e chamada foi implementada no front-end local da AV1 e está prevista para sincronização real com a API e o banco na AV2.
+
 ## Tipos de senha
 
-| Código | Tipo | Prioridade | Tempo (especificação) |
-| ------ | ---- | ---------- | --------------------- |
-| SP | Prioritária | Maior | ~15 min ± ~5 min |
-| SE | Retirada de exames | Especial; depois de SP | &lt; 2 min; ~95% ~1 min; ~5% ~5 min |
-| SG | Geral | Menor | ~5 min ± ~3 min |
+| Código | Tipo | Prioridade | Observação |
+| ------ | ---- | ---------- | --------- |
+| SP | Prioritária | Maior | Fila prioritária |
+| SE | Retirada de exames | Intermediária | Processa a fila de exames |
+| SG | Geral | Menor | Fila geral |
 
 Qualquer guichê atende qualquer tipo.
 
 ## Priorização
 
-**SP → SE|SG → SP → SE|SG**
+A regra implementada no código é:
 
-1. Se houver SP, atender SP.
-2. Senão, SE se houver.
-3. Senão, SG.
-4. Manter a alternância.
-5. Fila vazia de um tipo: seguir as prioridades restantes.
+**SP → SE → SG → SP → SE → SG**
 
-Implementação com transação/lock (planejado).
+Com lógica de alternância e fallback de grupo vazio.
+
+A regra de negócio foi codificada em `frontend/src/services/filaService.js` por meio de `escolherProxima` e `estado.ultimoGrupo`.
 
 ## Numeração
 
-Padrão: **`YYMMDD-PPSQ`**
+Padrão da numeração local:
 
-| Parte | Significado |
-| ----- | ----------- |
-| YY | Ano (2 dígitos) |
-| MM | Mês |
-| DD | Dia |
-| PP | Tipo (SP, SE, SG) |
-| SQ | Sequência com 3 dígitos |
+**`YYMMDD-SP001`**, **`YYMMDD-SE001`**, **`YYMMDD-SG001`**
 
-Exemplos: `260917-SP001`, `260917-SG001`. Sequência **reinicia diariamente**.
+A geração está em `frontend/src/services/totemService.js`, com sequência diária por tipo e limite de 999 por dia.
 
 ## Máquina de estados
 
+```text
+AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE → EM_ATENDIMENTO → ATENDIDA
+                    ↓
+               NÃO_COMPARECEU
 ```
-EMITIDA → AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE (opcional)
-                                → EM_ATENDIMENTO → ATENDIDA
-```
-
-Estado extra: **NÃO_COMPARECEU**.
 
 | Estado | Descrição |
 | ------ | --------- |
-| EMITIDA | Senha recém-criada |
-| AGUARDANDO | Na fila |
-| CHAMADA | Chamada pelo atendente |
-| CHAMADA_NOVAMENTE | Segunda chamada |
+| AGUARDANDO | Senha emitida e aguardando chamada |
+| CHAMADA | Senha chamada pela primeira vez |
+| CHAMADA_NOVAMENTE | Segunda chamada, com aviso “Última chamada” |
 | EM_ATENDIMENTO | Atendimento iniciado |
-| ATENDIDA | Atendimento finalizado |
-| NÃO_COMPARECEU | Não compareceu após as chamadas |
+| ATENDIDA | Atendimento concluído |
+| NÃO_COMPARECEU | Não compareceu após duas chamadas |
 
 ## Chamada e abandono
 
-- Ações: Chamar e Chamar novamente.
-- Sem comparecimento após duas chamadas: **NÃO_COMPARECEU**.
-- Cerca de 5% das senhas podem não ser atendidas (especificação).
-- Não atendidas: sem horário nem guichê de atendimento.
+- O atendente pode chamar a próxima senha ou repetir a última chamada.
+- A segunda chamada altera o estado para `CHAMADA_NOVAMENTE` e exibe o texto `Última chamada` na UI.
+- Após a segunda chamada, se o paciente não comparecer, o estado é marcado como `NÃO_COMPARECEU`.
+- O painel exibe as 5 últimas chamadas no front-end, conforme `PainelSenhas.jsx`.
 
 ## Expediente
 
-**07:00 às 17:00**
+O expediente é controlado no front-end por `horarioTotem()`, com intervalo entre 07:00 e 17:00 (horário de Brasília).
 
-- Sem novas chamadas fora do expediente.
-- Atendimentos já iniciados devem ser concluídos.
-- Após o encerramento, senhas em espera são **descartadas**.
+- Fora do expediente, a emissão de senha não é permitida.
+- Senhas em espera fora do expediente são tratadas como descartadas na lógica de relatórios.
 
 ## Lista de regras
 
-| Código | Regra |
-| ------ | ----- |
-| RN01 | SP possui maior prioridade |
-| RN02 | SG possui menor prioridade |
-| RN03 | SE possui prioridade operacional especial |
-| RN04 | Sequência SP → SE/SG → SP → SE/SG |
-| RN05 | Qualquer guichê pode atender qualquer senha |
-| RN06 | Senha pode ser chamada novamente |
-| RN07 | Após duas chamadas sem comparecimento, senha é abandonada |
-| RN08 | Expediente das 07h às 17h |
-| RN09 | Atendimentos iniciados devem ser finalizados |
-| RN10 | Senhas restantes ao final do expediente são descartadas |
-| RN11 | Sequência numérica reinicia diariamente |
-| RN12 | Painel exibe as 5 últimas chamadas |
-| RN13 | Cliente utiliza o totem anonimamente |
-| RN14 | Operações de atendente exigem autenticação |
+| Código | Regra | Status |
+| ------ | ----- | ------ |
+| RN01 | SP possui maior prioridade | Implementado |
+| RN02 | SG possui menor prioridade | Implementado |
+| RN03 | SE possui prioridade operacional especial | Implementado |
+| RN04 | Sequência de prioridade SP → SE → SG → SP → SE → SG | Implementado |
+| RN05 | Qualquer guichê pode atender qualquer senha | Implementado |
+| RN06 | Senha pode ser chamada novamente | Implementado |
+| RN07 | Após duas chamadas sem comparecimento, a senha é abandonada | Implementado |
+| RN08 | Expediente das 07h às 17h | Implementado |
+| RN09 | Atendimentos iniciados devem ser finalizados | Implementado |
+| RN10 | Senhas restantes ao final do expediente podem ser descartadas | Implementado |
+| RN11 | Sequência numérica reinicia diariamente | Implementado |
+| RN12 | Painel exibe as 5 últimas chamadas | Implementado |
+| RN13 | Cliente utiliza o totem anonimamente | Implementado |
+| RN14 | Operações de atendente exigem autenticação | Parcial |
+
+## Status geral
+
+As regras acima estão implementadas no protótipo front-end, mas ainda dependem de integração real à API e ao banco para cumprir o comportamento de produção da AV2.

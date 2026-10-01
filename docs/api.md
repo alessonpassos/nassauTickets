@@ -1,76 +1,41 @@
-# API REST (planejada)
+# API REST
 
-Ainda **não há rotas no repositório**. Caminhos da especificação — confirmar no código.
+URL base local: `http://localhost:3000/api`. Erros: `{ "erro": "mensagem" }`.
 
-URL base: a definir.
+## Implementada no `backend/`
 
-## Endpoints
+| Método | Endpoint | Descrição | Observação |
+| ------ | -------- | --------- | ---------- |
+| GET | `/health` | Retorna `{status:"ok"}` | Ainda não testa o banco |
+| GET | `/senhas/atual` | Chamada atual + histórico | Retorna 6 itens (1 atual + 5); a spec pede 5 no total |
+| GET | `/senhas/fila` | Senhas `AGUARDANDO` | Sem filtro por dia |
+| POST | `/senhas/chamar` | `{atendente_id, guiche_id}` — chama a próxima | Usa transação e `FOR UPDATE` |
+| POST | `/senhas/repetir` | Segunda chamada da última senha | Não filtra por guichê nem limita a uma vez |
+| GET | `/guiches` | Guichês ativos | — |
 
-| Método | Endpoint | Descrição | Autenticação |
-| ------ | -------- | --------- | ------------ |
-| POST | `/api/auth/login` | Login do atendente | Não |
-| POST | `/api/senhas` | Emissão (totem) | Não |
-| GET | `/api/senhas` | Listar | Sim |
-| GET | `/api/senhas/:id` | Detalhe | Sim |
-| GET | `/api/fila` | Fila | Sim |
-| GET | `/api/fila/proxima` | Próxima (reserva) | Sim |
-| POST | `/api/atendimentos/chamar` | Chamar | Sim |
-| POST | `/api/atendimentos/:id/iniciar` | Iniciar | Sim |
-| POST | `/api/atendimentos/:id/finalizar` | Finalizar | Sim |
-| POST | `/api/atendimentos/:id/chamar-novamente` | Segunda chamada | Sim |
-| GET | `/api/painel` | 5 últimas | a definir |
-| GET | `/api/relatorios/diario` | Diário | Gestor |
-| GET | `/api/relatorios/mensal` | Mensal | Gestor |
-| GET | `/api/relatorios/auditoria` | Auditoria | Gestor |
+## Prevista (necessária para integrar o frontend)
 
-## Erro previsto
+| Método | Endpoint | Descrição | Acesso |
+| ------ | -------- | --------- | ------ |
+| POST | `/auth/login` | Login do atendente/gestor | Público |
+| POST | `/senhas` | Emissão pelo totem `{tipo}` | Público |
+| POST | `/senhas/iniciar` | Inicia atendimento | Autenticado |
+| POST | `/senhas/finalizar` | Finaliza atendimento | Autenticado |
+| POST | `/senhas/nao-compareceu` | Marca abandono após 2 chamadas | Autenticado |
+| GET | `/relatorios/diario` | Resumo do dia | Gestor |
+| GET | `/relatorios/mensal` | Resumo do mês | Gestor |
+| GET | `/relatorios/detalhado` | Lista detalhada | Gestor |
+| GET | `/relatorios/auditoria` | Auditoria de chamadas | Gestor |
 
-```json
-{
-  "error": true,
-  "message": "Senha não encontrada"
-}
-```
+## Status HTTP
 
-## Exemplos ilustrativos
-
-**Emissão**
-
-```json
-{
-  "numero": "260917-SP001",
-  "tipo": "SP",
-  "estado": "AGUARDANDO",
-  "emitidaEm": "2026-09-17T10:15:00"
-}
-```
-
-**Painel**
-
-```json
-{
-  "ultimasChamadas": [
-    {
-      "numero": "260917-SP001",
-      "tipo": "SP",
-      "guiche": 1,
-      "ultimaChamada": false
-    }
-  ]
-}
-```
-
-## Status HTTP previstos
-
-| Código | Uso típico |
-| ------ | ---------- |
-| 200 | OK |
-| 201 | Criado |
+| Código | Uso |
+| ------ | --- |
+| 200/201 | Sucesso / criado |
 | 400 | Requisição inválida |
 | 401 | Não autenticado |
 | 403 | Sem permissão |
-| 404 | Não encontrado |
-| 409 | Conflito / concorrência |
-| 422 | Regra de negócio |
-| 500 | Erro interno |
-| 503 | Indisponível |
+| 404 | Sem senha na fila / rota inexistente |
+| 409 | Conflito de estado ou concorrência |
+| 422 | Regra de negócio (ex.: fora do expediente) |
+| 503 | Banco ou serviço indisponível |
