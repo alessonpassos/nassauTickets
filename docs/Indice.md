@@ -1,25 +1,20 @@
-# Documentação — nassauTickets / MedSync
+# Documentação — nassauTickets
 
-Central de documentação do **CRM Hospitalar** (controle de atendimento por senhas: totem, painel e guichê).
-
-O código da aplicação ainda está em planejamento (`front-end/` e `back-end/` como esqueleto). O que ainda não existe no código está marcado como **planejado**.
-
-## Índice
+Controle de atendimento por senhas (totem, painel e guichê) de um Laboratório de Análises Clínicas.
 
 | Documento | Conteúdo |
 | --------- | -------- |
-| [Tecnologias](tecnologias.md) | Stack, versões previstas e para que cada ferramenta serve |
-| [Arquitetura](arquitetura.md) | Camadas, pastas, fluxo e integração front/back |
+| [Requisitos](requirements/requisitos.md) | RF, RNF, regras de negócio, casos de uso e recuperação de desastres |
 | [Regras de negócio](regras-negocio.md) | Tipos de senha, prioridade, estados, expediente |
-| [API](api.md) | Endpoints REST previstos, autenticação e erros |
-| [Front-end](frontend.md) | Equipe (todos desenvolvem), telas, rotas, UI |
-| [Back-end](backend.md) | Equipe, agentes, banco, concorrência, relatórios |
-| [Equipe e processo](equipe.md) | Git, IA, licença |
+| [MER](mer/mer.md) | Modelo entidade-relacionamento e DDL de referência |
+| [UML](models/uml/) | Máquina de estados, casos de uso e sequência de chamada |
+| [API](api.md) | Endpoints implementados e previstos |
+| [Arquitetura](arquitetura.md) | Camadas, pastas e fluxo |
+| [Tecnologias](tecnologias.md) | Stack e versões |
+| [Frontend](frontend.md) | Telas, rotas e checklist |
+| [Backend](backend.md) | Banco, concorrência, relatórios |
+| [Testes](testes.md) | Feedbacks e checklist de testes |
+| [Pendências](pendencias.md) | Diferenças entre código e especificação |
+| [Equipe e processo](equipe.md) | Git e licença |
 
-Pastas de artefatos (preencher quando houver arquivos):
-
-- `back-end/docs/requirements/` — requisitos
-- `back-end/docs/mer/` — modelo entidade-relacionamento
-- `back-end/docs/models/uml/` — diagramas UML
-- `back-end/docs/mockups/` — mockups de tela
-- `back-end/docs/branding/` — identidade visual
+Pastas de artefatos: `branding/` e `mockups/` aguardam os arquivos de identidade visual e protótipos das telas.

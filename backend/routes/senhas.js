@@ -2,6 +2,16 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../config/database");
 
+/*
+Feedback do tester Luiz
+Processo de chamada de senhas: confere e funcional.
+Segunda chamada: confere e funcional.
+Armazenamento de histórico: confere e funcional, somente no localhost, na espera
+da implementação com banco de dados.
+Quesito de prioridade: confere com que foi dado no docs.
+Padronização das senhas: confere com que foi dado no docs.
+*/
+
 const CICLO_PRIORIDADE = ["SP", "SE", "SG"];
 
 router.get("/atual", async (req, res) => {

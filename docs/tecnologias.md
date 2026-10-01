@@ -1,68 +1,55 @@
-# Tecnologias utilizadas
+# Tecnologias
 
-Versões no código: **a definir** até existir `package.json`. Abaixo está o que o projeto **vai usar**.
+## Stack real do projeto
 
-## Front-end
+### Front-end
 
-| Tecnologia | Versão prevista | Uso |
-| ---------- | --------------- | --- |
-| React | a definir | Interface (totem, painel, guichê, relatórios) |
-| JavaScript | ES modules | Linguagem da UI |
-| Vite | a definir | Build e servidor de desenvolvimento |
-| React Router | a definir | Navegação e rotas protegidas |
-| CSS | a definir | Estilo das telas |
-| fetch | nativo | Chamadas HTTP à API |
-| Git / GitHub | — | Versionamento e colaboração |
+| Tecnologia | Versão atual | Uso |
+| ---------- | ------------ | --- |
+| React | 19.2.8 | interface do sistema |
+| Vite | 8.3.0 | build e servidor de desenvolvimento |
+| React Router | 7.18.4 | navegação entre páginas e rotas protegidas |
+| JavaScript | ES modules | desenvolvimento da interface |
+| CSS | nativo | estilos da aplicação |
 
-Conceitos previstos na UI: JSX, componentes, props, estado, `useState`, `useEffect`, listas, formulários, loading/erro/vazio.
+### Back-end
 
-## Back-end
+| Tecnologia | Versão atual | Uso |
+| ---------- | ------------ | --- |
+| Node.js | 22 | runtime do servidor |
+| Express | 4.16.1 | API e rotas HTTP |
+| MySQL | 8.0 | persistência real da aplicação |
+| mysql2 | 3.24.4 | driver do banco |
+| dotenv | 18.0.3 | leitura de variáveis de ambiente |
+| cors | 2.8.6 | permissão de acesso do front-end |
 
-| Tecnologia | Versão prevista | Uso |
-| ---------- | --------------- | --- |
-| Node.js LTS | 22 | Runtime da API |
-| Express | a definir | Servidor HTTP / REST |
-| MySQL | 8.0 | Persistência |
-| ORM / driver | a definir | Acesso a dados |
-| Autenticação | JWT ou sessão (a definir) | Login de atendente/gestor |
-| Validação | a definir | Corpo das requisições |
-| Testes | a definir | Fila, estados, concorrência |
+## Dependências relevantes
 
-## Infraestrutura e configuração
+- `frontend/package.json`: Vite, React, React Router, ESLint
+- `backend/package.json`: Express, `mysql2`, `dotenv`, `cors`, `nodemon`
 
-| Item | Uso |
-| ---- | --- |
-| Variáveis de ambiente (`.env`) | Porta, banco, segredos — **não versionar** |
-| `.env.example` | Modelo de configuração (planejado) |
-| CORS | Permitir o front-end consumir a API |
-| MySQL 8.0 local | Desenvolvimento |
+## Configuração do ambiente
 
-## Variáveis previstas
+O ambiente do back-end usa variáveis de ambiente em `.env` e `process.env` em `backend/config/database.js`.
 
-**Front-end**
+Exemplo de configuração esperada:
 
-```
-VITE_API_URL=
-```
-
-**Back-end**
-
-```
-PORT=3000
+```env
 DB_HOST=localhost
 DB_PORT=3306
-DB_NAME=nassauTickets
 DB_USER=root
-DB_PASSWORD=
-JWT_SECRET=
+DB_PASSWORD=sua_senha
+DB_NAME=nassauTickets
+PORT=3000
 ```
 
-## Decisões técnicas
+## Decisão técnica
 
-| Decisão | Motivo |
-| ------- | ------ |
-| React + Vite | SPA acadêmica, hot reload, ecossistema da disciplina |
-| Node.js 22 + Express + MySQL 8.0 | Stack pedida para o back-end |
-| API REST JSON | Integração simples entre as duas camadas |
-| Totem sem login | Cliente anônimo (RN13) |
-| Transação / lock na fila | Dois guichês não pegam a mesma senha |
+A escolha do back-end em Node.js 22 + Express + MySQL 8.0 foi adequada para a disciplina porque combina simplicidade, compatibilidade com o front-end em React e suporte à persistência e consultas estruturadas em produção.
+
+## Observações finais
+
+- O protótipo AV1 usa `localStorage` e `sessionStorage`.
+- O banco MySQL não possui schema versionado no repositório.
+- A autenticação real continua planejada para a AV2.
+

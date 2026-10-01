@@ -11,6 +11,14 @@ var guichesRouter = require("./routes/guiches");
 
 var app = express();
 
+/*
+Feedback do tester Luiz
+Sistema seguindo como esperado, sem bugs aparentes até o momento.
+Mas esperando conectividade com banco de dados para testar
+o armazenamento de histórico. E se todos os processos estão funcionando
+como esperado.
+*/
+
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(logger("dev"));
 app.use(express.json());

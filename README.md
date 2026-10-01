@@ -1,133 +1,115 @@
-# MedSync Squad — CRM Hospitalar (nassauTickets)
+# nassauTickets — Sistema de Controle de Atendimento
 
-A equipe **MedSync Squad** (4 integrantes) desenvolve um **CRM Hospitalar** para organizar o fluxo de informações entre recepção, corpo clínico e pacientes.
+Sistema de senhas para um **Laboratório de Análises Clínicas**: totem de emissão, painel de chamadas com áudio, área do atendente e relatórios para o gestor.
 
-O **MedSync** cobre totem de senhas, painel de chamadas, área do atendente e, quando previsto, relatórios. O back-end controla emissão, fila, prioridade e atendimento para laboratório de análises clínicas.
+**Licença:** [MIT](LICENSE) · **Repositório:** https://github.com/alessonpassos/nassauTickets
 
-**Status:** em desenvolvimento  
-**Licença:** [MIT](LICENSE)  
-**Repositório:** [github.com/alessonpassos/nassauTickets](https://github.com/alessonpassos/nassauTickets)
+## Objetivo
 
-Documentação completa: pasta **[docs/](docs/INDICE.md)**.
+Controlar emissão, fila, chamada e atendimento de senhas **SP** (prioritária), **SE** (retirada de exames) e **SG** (geral), com priorização SP → SE|SG → SP → SE|SG, expediente das 7h às 17h, numeração `YYMMDD-PPSQ`, máquina de estados, relatórios e auditoria.
 
----
+## Membros
 
-## Problema e objetivo
+| Nome                 | Matrícula | Papel                        | Área               | Responsabilidades                                                                               |
+| :------------------- | :-------: | :--------------------------- | :----------------- | :---------------------------------------------------------------------------------------------- |
+| Alesson Passos       | 01837765  | Desenvolvedor e Scrum Master | Frontend e Backend | Página do totem (`/totem`); painel de senhas (`/painel-de-senha`); Scrum Master de todo o projeto |
+| Daniel do Nascimento | 01810958  | Desenvolvedor e Documentador | Frontend e Backend | Página de relatórios (`/relatorios`); documentação do frontend e do backend                     |
+| Jefté Pedro          | 01856102  | Desenvolvedor                | Frontend e Backend | Funcionalidades de todas as páginas; banco de dados (MySQL)                                     |
+| Luiz Alexandre       | 01540149  | Desenvolvedor e Testador     | Frontend e Backend | Tela de login (`/login`); área do atendente (`/atendente`); testes do backend                   |
 
-Informações desorganizadas entre recepção, profissionais e pacientes: dificuldade para emitir senha, acompanhar o painel e registrar o atendimento no guichê.
+## Tecnologias
 
-**Objetivo:** aplicação web (React + API Node.js) que centraliza esse fluxo na interface e na persistência.
+| Camada     | Tecnologia                                 |
+| :--------- | :----------------------------------------- |
+| Frontend   | React 19, Vite, React Router, CSS          |
+| Backend    | Node.js LTS 22, Express, `mysql2`          |
+| Banco      | MySQL 8.0                                  |
+| Integração | API REST JSON ([docs/api.md](docs/api.md)) |
 
-| Público | Papel |
-| ------- | ----- |
-| Recepção | Totem e orientação ao painel |
-| Atendente / corpo clínico | Login, chamada e atendimento no guichê |
-| Pacientes | Senha no totem e acompanhamento no painel |
-| Gestor | Relatórios (se a tela existir) |
+**Por que Node.js + Express no backend?** Usa a mesma linguagem (JavaScript) do frontend React, facilitando o trabalho em grupo; Express é simples para uma API REST; `mysql2` oferece transações e `SELECT … FOR UPDATE`, necessários para tratar a concorrência entre guichês.
 
----
+## Visão geral da arquitetura
 
-## Equipe
+```
+Totem / Painel / Atendente / Gestor  →  React (Vite)  →  API REST (Express)  →  MySQL 8.0
+```
 
-### Front-end
+Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 
-No front-end, **todos desenvolvem**.
+## Estado atual do projeto
 
-| Nome | Matrícula | Atribuição |
-| ---- | --------- | ---------- |
-| Alesson Passos | 01837765 | Desenvolvedor |
-| Daniel do Nascimento | 01810958 | Desenvolvedor |
-| Jefté Pedro | 01856102 | Desenvolvedor |
-| Luiz Alexandre | 01540149 | Desenvolvedor |
+| Parte                                                            | Situação                                                          |
+| :--------------------------------------------------------------- | :---------------------------------------------------------------- |
+| Frontend (totem, painel com áudio, atendente, login, relatórios) | Funcional, usando `localStorage` como armazenamento               |
+| Backend (chamar, repetir, fila, painel, guichês)                 | Parcial; ainda sem emissão, login, iniciar/finalizar e relatórios |
+| Integração frontend ↔ backend                                    | Pendente                                                          |
 
-### Back-end
-
-| Nome | Matrícula | Atribuição |
-| ---- | --------- | ---------- |
-| Alesson Passos | 01837765 | Scrum Master & Desenvolvedor |
-| Daniel do Nascimento | 01810958 | Documentador & Tester |
-| Jefté Pedro | 01856102 | Desenvolvedor |
-| Luiz Alexandre | 01540149 | Tester |
-
----
-
-## O que o projeto vai usar
-
-| Camada | Stack prevista |
-| ------ | -------------- |
-| Front-end | React, JavaScript, Vite, React Router, CSS, `fetch` |
-| Back-end | Node.js LTS 22, Express, MySQL 8.0 |
-| Integração | API REST JSON |
-| Versionamento | Git / GitHub |
-
-Detalhes: [docs/tecnologias.md](docs/tecnologias.md).
-
----
-
-## Regras em resumo
-
-- Senhas **SP** (prioritária), **SE** (exames), **SG** (geral).
-- Prioridade: **SP → SE|SG → SP → SE|SG**.
-- Numeração **`YYMMDD-PPSQ`**, sequência diária.
-- Expediente **07:00–17:00**.
-- Painel: **5 últimas** chamadas.
-- Cliente no totem **sem login**.
-
-Detalhes: [docs/regras-negocio.md](docs/regras-negocio.md).
-
----
+Lista completa em [docs/pendencias.md](docs/pendencias.md) e rastreabilidade dos requisitos em [docs/requirements/requisitos.md](docs/requirements/requisitos.md).
 
 ## Estrutura do repositório
 
 ```
 nassauTickets/
-├── README.md
+├── backend/    # API Express + MySQL
+├── docs/       # branding, mer, mockups, models/uml, requirements e demais documentos
+├── frontend/   # React + Vite
+├── .gitignore
 ├── LICENSE
-├── docs/                 # documentação (índice: INDICE.md)
-├── front-end/            # interface React (esqueleto)
-└── back-end/             # API Node.js (esqueleto + pastas de artefatos)
+└── README.md
 ```
 
-Ainda não há `package.json` nem código da aplicação versionado. Pastas `front-end/` e `back-end/` são o esqueleto.
+## Instalação e execução
 
----
+Pré-requisitos: Node.js 22, Git e, para o backend, MySQL 8.0.
 
-## Como executar (quando o código existir)
-
-**Front-end**
+**Frontend** (funciona sozinho, com dados locais no navegador)
 
 ```bash
-cd front-end
+cd frontend
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
 ```
 
-**Back-end**
+**Backend**
+
+1. Crie o banco e as tabelas.
+2. Crie `backend/.env` com as variáveis da tabela abaixo.
+3. Execute:
 
 ```bash
-cd back-end
+cd backend
 npm install
-npm run dev
+npm run dev        # http://localhost:3000
 ```
 
-Variáveis: ver [docs/tecnologias.md](docs/tecnologias.md). Não versionar `.env`.
+## Configuração
 
----
+| Variável                                                  | Descrição                  |
+| :-------------------------------------------------------- | :------------------------- |
+| `PORT`                                                    | Porta da API (padrão 3000) |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexão com o MySQL        |
+
+O CORS do backend aceita `http://localhost:5173`. Nunca versione o `.env`.
+
+## Telas
+
+| Rota               | Descrição                                                                               |
+| :----------------- | :-------------------------------------------------------------------------------------- |
+| `/totem`           | Emissão de senha (anônimo)                                                              |
+| `/painel-de-senha` | Painel com as 5 últimas chamadas e áudio                                                |
+| `/login`           | Login do atendente/gestor (usuários de demonstração em `frontend/src/data/usuarios.js`) |
+| `/atendente`       | Chamar, chamar novamente, iniciar, finalizar e não compareceu                           |
+| `/relatorios`      | Relatórios diário, mensal, detalhado e auditoria (somente gestor)                       |
+
+## Branches
+
+| Branch | Uso                                                  |
+| :----- | :--------------------------------------------------- |
+| `dev`  | Desenvolvimento; todo código é enviado primeiro aqui |
+| `main` | Versão estável, atualizada por merge da `dev`        |
+
+Padrão de commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
 
 ## Documentação
 
-| Documento | Conteúdo |
-| --------- | -------- |
-| [docs/INDICE.md](docs/INDICE.md) | Índice da documentação |
-| [Tecnologias](docs/tecnologias.md) | Ferramentas e versões previstas |
-| [Arquitetura](docs/arquitetura.md) | Camadas e pastas |
-| [Regras de negócio](docs/regras-negocio.md) | Fila, estados, expediente |
-| [API](docs/api.md) | Endpoints REST previstos |
-| [Front-end](docs/frontend.md) | Equipe (todos desenvolvem), telas e checklist |
-| [Back-end](docs/backend.md) | Equipe, banco, concorrência, relatórios |
-
----
-
-## Licença
-
-Este projeto está sob a licença **MIT**. Copyright (c) 2026 Alesson Passos.
+[Índice](docs/INDICE.md) · [Requisitos](docs/requirements/requisitos.md) · [Regras de negócio](docs/regras-negocio.md) · [MER](docs/mer/mer.md) · [UML](docs/models/uml/) · [API](docs/api.md) · [Arquitetura](docs/arquitetura.md) · [Testes](docs/testes.md) · [Pendências](docs/pendencias.md)

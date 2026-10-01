@@ -1,82 +1,79 @@
 # Front-end
 
-Interface React do CRM Hospitalar: totem, painel, área do atendente e, quando existir, relatórios.
+## Visão geral
 
-No **front-end**, todos os integrantes desenvolvem.
+O front-end foi implementado em React 19 com Vite e organiza as telas de acesso, atendimento e relatórios do sistema.
 
-## Equipe (front-end)
+## Páginas reais existentes
 
-| Nome | Matrícula | Atribuição |
-| ---- | --------- | ---------- |
-| Alesson Passos | 01837765 | Desenvolvedor |
-| Daniel do Nascimento | 01810958 | Desenvolvedor |
-| Jefté Pedro | 01856102 | Desenvolvedor |
-| Luiz Alexandre | 01540149 | Desenvolvedor |
+| Página | Arquivo | Função |
+| ------ | ------- | ------ |
+| `Inicio` | `frontend/src/pages/Inicio.jsx` | tela de entrada com links para totem, painel e atendimento |
+| `Login` | `frontend/src/pages/Login.jsx` | autenticação local para atendente e gestor |
+| `PainelAtendente` | `frontend/src/pages/PainelAtendente.jsx` | seleção do guichê, chamada, início e fim de atendimento |
+| `PainelSenhas` | `frontend/src/pages/PainelSenhas.jsx` | painel com histórico das últimas 5 chamadas |
+| `Relatorios` | `frontend/src/pages/Relatorios.jsx` | relatórios diários, mensais, detalhados e auditoria |
+| `Totem` | `frontend/src/pages/Totem.jsx` | emissão local de senha |
 
-## Público na interface
+## Rotas reais
 
-| Público | Finalidade |
-| ------- | ---------- |
-| Recepção | Apoiar o paciente no totem e no painel |
-| Corpo clínico / atendente | Login, chamada de senha e registro no guichê |
-| Pacientes | Emitir senha e acompanhar o painel |
-| Gestor | Relatórios, se a tela existir |
+| Rota | Papel |
+| ---- | ----- |
+| `/` | tela inicial |
+| `/login` | autenticação local |
+| `/atendente` | área do atendente |
+| `/painel-de-senha` | painel de senhas |
+| `/relatorios` | gestor |
+| `/totem` | totem de emissão |
 
-## Funcionalidades
+## Funcionalidades implementadas
 
-| Funcionalidade | Descrição | Status |
-| -------------- | --------- | ------ |
-| Totem de emissão | Cliente escolhe SP, SE ou SG e recebe a senha | Planejado |
-| Painel de chamadas | Exibe as 5 últimas senhas; não antecipa a próxima | Planejado |
-| Áudio da chamada | Tipo, número e guichê; “Última chamada” na segunda chamada | Planejado |
-| Login do atendente | Tela de autenticação; cliente sem login | Planejado |
-| Área do atendente | Chamar, chamar novamente, iniciar e finalizar | Planejado |
-| Relatórios (gestor) | Diário, mensal e auditoria | Planejado |
+| Funcionalidade | Status |
+| -------------- | ------ |
+| Emissão de senha no totem | Implementado localmente |
+| Numeração diária por tipo | Implementado localmente |
+| Prioridade SP → SE → SG → SP | Implementado localmente |
+| Chamada da próxima senha | Implementado localmente |
+| Chamada novamente com “Última chamada” | Implementado localmente |
+| Início e fim de atendimento | Implementado localmente |
+| Não comparecimento após 2 chamadas | Implementado localmente |
+| Painel com 5 últimas chamadas | Implementado localmente |
+| Login de atendente e gestor | Implementado localmente |
+| Relatórios diário e mensal | Implementado localmente |
+| Auditoria | Implementado localmente |
 
-Cadastro de pacientes / prontuário / agenda: **fora deste escopo**.
+## Persistência e sessão
 
-## Autenticação na UI
+- O estado da fila fica em `localStorage` usando `nassautickets:fila:v1`.
+- O estado do totem fica em `localStorage` usando `nassautickets:totem:demo:v1`.
+- A sessão do usuário fica em `sessionStorage` usando `nassautickets:sessao`.
 
-```
-Usuário → Login → Validação → Autenticação → Sessão → Acesso autorizado
-```
+Isso confirma que o protótipo atual é local e depende do navegador, sem integração com API.
 
-Cliente no totem: **sem login**. Não publicar senhas ou tokens no repositório.
+## Acessibilidade e UX
 
-Planejado: tela de login, credenciais inválidas, sessão/token, rotas protegidas, logout, tratamento 401/403.
+A interface usa:
 
-## Estados da aplicação
+- labels e `aria-live` em elementos importantes
+- botões e estados de erro visíveis
+- CSS reforçando a leitura do painel e da senha
+- som e narração opcional no painel de chamadas
 
-| Estado | Uso |
-| ------ | --- |
-| Carregamento | Enquanto dados são buscados |
-| Sucesso | Operação concluída |
-| Estado vazio | Sem informações para exibir |
-| Erro | Falha na operação |
-| Tentar novamente | Nova tentativa após falha |
+## Limitações da UI atual
 
-## Acessibilidade, segurança e LGPD (UI)
+- O login não é autenticado no back-end.
+- A API real da fila ainda não está integrada.
+- O totem e o painel usam a mesma fila local por navegador, não por serviço compartilhado.
 
-- HTML semântico, labels, teclado, contraste, textos do painel, áudio.
-- Rotas protegidas; não armazenar senhas no código; `.env` para URL da API.
-- Não versionar dados reais de pacientes; totem anônimo; mostrar só o necessário ao perfil.
+## Checklist de verificação
 
-## Instalação e execução (quando existir `package.json`)
+- [x] React 19, Vite 8 e React Router 7
+- [x] Componentes, páginas e lógica local
+- [x] Login local em `sessionStorage`
+- [x] Estados de vazio, erro e sucesso na interface
+- [x] Acessibilidade básica e painel com áudio
+- [ ] Integração real com a API do back-end
+- [ ] Autenticação real e autorização por perfil
+- [ ] Persistência centralizada em MySQL
 
-```bash
-git clone https://github.com/alessonpassos/nassauTickets.git
-cd nassauTickets/front-end
-npm install
-npm run dev
-```
 
-Configuração: `VITE_API_URL=`.
-
-## Checklist
-
-- [ ] React / Vite / React Router
-- [ ] Componentes e páginas
-- [ ] fetch e autenticação
-- [ ] Loading, vazio, erro, tentar novamente
-- [ ] Validações, acessibilidade, segurança, LGPD
-- [ ] Testes e documentação atualizada
