@@ -84,15 +84,6 @@ Grupo: MedSync Squad
 | Jefté Pedro | 01856102 | Desenvolvedor |
 | Luiz Alexandre | 01540149 | Testador |
 
-### Contribuição individual
-
-| Integrante | Contribuição |
-|------------|--------------|
-| Alesson Passos | PREENCHER: o que fez de fato (ex.: repositório, branches, API Express, transação de chamada) |
-| Daniel do Nascimento | PREENCHER: o que fez de fato (ex.: requisitos, MER, UML, README) |
-| Jefté Pedro | PREENCHER: o que fez de fato (ex.: totem, painel, serviços de fila) |
-| Luiz Alexandre | PREENCHER: o que fez de fato (ex.: testes da máquina de estados, validação das regras) |
-
 ## Funcionalidades
 
 - Totem anônimo com emissão de senha SP, SE e SG, numeradas no padrão `YYMMDD-PPSQ` com sequência diária por tipo.
