@@ -10,20 +10,20 @@ Controlar emissão, fila, chamada e atendimento de senhas **SP** (prioritária),
 
 ## Membros
 
-| Nome | Matrícula | Papel |
-| ---- | --------- | ----- |
-| Alesson Passos | 01837765 | Scrum Master e Desenvolvedor |
-| Daniel do Nascimento | 01810958 | Documentador, Testador e Desenvolvedor |
-| Jefté Pedro | 01856102 | Desenvolvedor |
-| Luiz Alexandre | 01540149 | Testador e Desenvolvedor |
+| Nome                 | Matrícula | Papel                        | Área               | Responsabilidades                                                                               |
+| :------------------- | :-------: | :--------------------------- | :----------------- | :---------------------------------------------------------------------------------------------- |
+| Alesson Passos       | 01837765  | Desenvolvedor e Scrum Master | Frontend e Backend | Página do totem (`/totem`); painel de senhas (`/painel-de-senha`); Scrum Master de todo o projeto |
+| Daniel do Nascimento | 01810958  | Desenvolvedor e Documentador | Frontend e Backend | Página de relatórios (`/relatorios`); documentação do frontend e do backend                     |
+| Jefté Pedro          | 01856102  | Desenvolvedor                | Frontend e Backend | Funcionalidades de todas as páginas; banco de dados (MySQL)                                     |
+| Luiz Alexandre       | 01540149  | Desenvolvedor e Testador     | Frontend e Backend | Tela de login (`/login`); área do atendente (`/atendente`); testes do backend                   |
 
 ## Tecnologias
 
-| Camada | Tecnologia |
-| ------ | ---------- |
-| Frontend | React 19, Vite, React Router, CSS |
-| Backend | Node.js LTS 22, Express, `mysql2` |
-| Banco | MySQL 8.0 |
+| Camada     | Tecnologia                                 |
+| :--------- | :----------------------------------------- |
+| Frontend   | React 19, Vite, React Router, CSS          |
+| Backend    | Node.js LTS 22, Express, `mysql2`          |
+| Banco      | MySQL 8.0                                  |
 | Integração | API REST JSON ([docs/api.md](docs/api.md)) |
 
 **Por que Node.js + Express no backend?** Usa a mesma linguagem (JavaScript) do frontend React, facilitando o trabalho em grupo; Express é simples para uma API REST; `mysql2` oferece transações e `SELECT … FOR UPDATE`, necessários para tratar a concorrência entre guichês.
@@ -38,11 +38,11 @@ Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 
 ## Estado atual do projeto
 
-| Parte | Situação |
-| ----- | -------- |
-| Frontend (totem, painel com áudio, atendente, login, relatórios) | Funcional, usando `localStorage` como armazenamento |
-| Backend (chamar, repetir, fila, painel, guichês) | Parcial; ainda sem emissão, login, iniciar/finalizar e relatórios |
-| Integração frontend ↔ backend | Pendente |
+| Parte                                                            | Situação                                                          |
+| :--------------------------------------------------------------- | :---------------------------------------------------------------- |
+| Frontend (totem, painel com áudio, atendente, login, relatórios) | Funcional, usando `localStorage` como armazenamento               |
+| Backend (chamar, repetir, fila, painel, guichês)                 | Parcial; ainda sem emissão, login, iniciar/finalizar e relatórios |
+| Integração frontend ↔ backend                                    | Pendente                                                          |
 
 Lista completa em [docs/pendencias.md](docs/pendencias.md) e rastreabilidade dos requisitos em [docs/requirements/requisitos.md](docs/requirements/requisitos.md).
 
@@ -72,7 +72,7 @@ npm run dev        # http://localhost:5173
 
 **Backend**
 
-1. Crie o banco e as tabelas com [docs/mer/schema-referencia.sql](docs/mer/schema-referencia.sql).
+1. Crie o banco e as tabelas.
 2. Crie `backend/.env` com as variáveis da tabela abaixo.
 3. Execute:
 
@@ -84,33 +84,32 @@ npm run dev        # http://localhost:3000
 
 ## Configuração
 
-| Variável | Descrição |
-| -------- | --------- |
-| `PORT` | Porta da API (padrão 3000) |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexão com o MySQL |
+| Variável                                                  | Descrição                  |
+| :-------------------------------------------------------- | :------------------------- |
+| `PORT`                                                    | Porta da API (padrão 3000) |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexão com o MySQL        |
 
 O CORS do backend aceita `http://localhost:5173`. Nunca versione o `.env`.
 
 ## Telas
 
-| Rota | Descrição |
-| ---- | --------- |
-| `/totem` | Emissão de senha (anônimo) |
-| `/painel-de-senha` | Painel com as 5 últimas chamadas e áudio |
-| `/login` | Login do atendente/gestor (usuários de demonstração em `frontend/src/data/usuarios.js`) |
-| `/atendente` | Chamar, chamar novamente, iniciar, finalizar e não compareceu |
-| `/relatorios` | Relatórios diário, mensal, detalhado e auditoria (somente gestor) |
+| Rota               | Descrição                                                                               |
+| :----------------- | :-------------------------------------------------------------------------------------- |
+| `/totem`           | Emissão de senha (anônimo)                                                              |
+| `/painel-de-senha` | Painel com as 5 últimas chamadas e áudio                                                |
+| `/login`           | Login do atendente/gestor (usuários de demonstração em `frontend/src/data/usuarios.js`) |
+| `/atendente`       | Chamar, chamar novamente, iniciar, finalizar e não compareceu                           |
+| `/relatorios`      | Relatórios diário, mensal, detalhado e auditoria (somente gestor)                       |
 
 ## Branches
 
-| Branch | Uso |
-| ------ | --- |
-| `dev` | Desenvolvimento; todo código é enviado primeiro aqui |
-| `main` | Versão estável, atualizada por merge da `dev` |
+| Branch | Uso                                                  |
+| :----- | :--------------------------------------------------- |
+| `dev`  | Desenvolvimento; todo código é enviado primeiro aqui |
+| `main` | Versão estável, atualizada por merge da `dev`        |
 
 Padrão de commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`.
 
 ## Documentação
 
 [Índice](docs/INDICE.md) · [Requisitos](docs/requirements/requisitos.md) · [Regras de negócio](docs/regras-negocio.md) · [MER](docs/mer/mer.md) · [UML](docs/models/uml/) · [API](docs/api.md) · [Arquitetura](docs/arquitetura.md) · [Testes](docs/testes.md) · [Pendências](docs/pendencias.md)
-.
