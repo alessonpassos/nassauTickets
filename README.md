@@ -74,15 +74,26 @@ Laboratórios de análises clínicas sofrem com filas desorganizadas e controle 
 | Recepção | Apoiar o cliente no totem e no painel |
 
 ## Membros
+### Front-end
 
-Grupo: MedSync Squad
+No front-end, **todos desenvolvem**.
 
-| Nome | Matrícula | Papel |
-|------|-----------|-------|
-| Alesson Passos | 01837765 | Scrum Master |
-| Daniel do Nascimento | 01810958 | Documentador |
+| Nome | Matrícula | Atribuição |
+| ---- | --------- | ---------- |
+| Alesson Passos | 01837765 | Desenvolvedor |
+| Daniel do Nascimento | 01810958 | Desenvolvedor |
 | Jefté Pedro | 01856102 | Desenvolvedor |
-| Luiz Alexandre | 01540149 | Testador |
+| Luiz Alexandre | 01540149 | Desenvolvedor |
+
+### Back-end
+
+| Nome | Matrícula | Atribuição |
+| ---- | --------- | ---------- |
+| Alesson Passos | 01837765 | Scrum Master & Desenvolvedor |
+| Daniel do Nascimento | 01810958 | Documentador & Tester |
+| Jefté Pedro | 01856102 | Desenvolvedor |
+| Luiz Alexandre | 01540149 | Tester |
+
 
 ## Funcionalidades
 
