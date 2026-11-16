@@ -1,25 +1,74 @@
-import { duracao } from "../utils/formatar.js";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 export const TIPOS = ["SP", "SE", "SG"];
 export const ROTULO = { SP: "Prioritária", SE: "Retirada de exames", SG: "Geral" };
 
-// prefixo: "YYMMDD" (diário) ou "YYMM" (mensal). Senhas em espera fora do expediente contam como descartadas.
-export function resumir(senhas, prefixo, { hoje, aberto }) {
-  const lista = senhas.filter((s) => s.numero.startsWith(prefixo));
-  const atendidas = lista.filter((s) => s.estado === "ATENDIDA");
-  const tempos = atendidas.map((s) => Date.parse(s.finalizadaEm) - Date.parse(s.iniciadaEm));
-  const media = tempos.length ? tempos.reduce((a, b) => a + b, 0) / tempos.length : NaN;
-  return {
-    emitidas: lista.length,
-    atendidas: atendidas.length,
-    naoCompareceu: lista.filter((s) => s.estado === "NÃO_COMPARECEU").length,
-    descartadas: lista.filter((s) => s.estado === "AGUARDANDO" && (!s.numero.startsWith(hoje) || !aberto)).length,
-    tempoMedio: duracao(media),
-    porTipo: TIPOS.map((tipo) => ({
-      tipo,
-      rotulo: ROTULO[tipo],
-      emitidas: lista.filter((s) => s.tipo === tipo).length,
-      atendidas: atendidas.filter((s) => s.tipo === tipo).length,
-    })),
-  };
+export class ErroRelatorio extends Error {
+  constructor(status, mensagem) {
+    super(mensagem);
+    this.status = status;
+  }
+}
+
+async function getJson(caminho, params) {
+  const url = new URL(`${API_BASE.replace(/\/$/, "")}${caminho}`);
+  Object.entries(params).forEach(([chave, valor]) => {
+    if (valor != null && valor !== "") url.searchParams.set(chave, valor);
+  });
+
+  const resposta = await fetch(url.toString());
+  let corpo = null;
+  try {
+    corpo = await resposta.json();
+  } catch {
+    /* corpo vazio ou não JSON */
+  }
+
+  if (!resposta.ok) {
+    throw new ErroRelatorio(resposta.status, corpo?.erro || "Erro ao carregar relatório.");
+  }
+  return corpo;
+}
+
+export function buscarDiario(data) {
+  return getJson("/relatorios/diario", { data });
+}
+
+export function buscarMensal(mes) {
+  return getJson("/relatorios/mensal", { mes });
+}
+
+export function buscarDetalhado(data, tipo) {
+  const params = { data };
+  if (tipo && TIPOS.includes(tipo)) params.tipo = tipo;
+  return getJson("/relatorios/detalhado", params);
+}
+
+export function buscarAuditoria(data) {
+  return getJson("/relatorios/auditoria", { data });
+}
+
+export function normalizarDetalhado(linhas) {
+  return (linhas ?? []).map((l) => ({
+    chave: l.codigo,
+    senha: l.codigo,
+    tipo: l.tipo,
+    emissao: l.emitida_em ?? null,
+    atendimento: null,
+    guiche: l.guiche ?? null,
+    estado: l.status ?? "",
+  }));
+}
+
+export function normalizarAuditoria(linhas) {
+  return (linhas ?? []).map((l, i) => ({
+    chave: `${l.codigo}-${l.primeira_chamada_em ?? i}`,
+    senha: l.codigo,
+    atendente: l.atendente_id ?? "—",
+    guiche: l.guiche ?? "—",
+    primeiraChamada: l.primeira_chamada_em ?? null,
+    segundaChamada: l.segunda_chamada_em ?? null,
+    inicio: null,
+    fim: null,
+  }));
 }
