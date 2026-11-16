@@ -12,6 +12,10 @@ URL base local: `http://localhost:3000/api`. Erros: `{ "erro": "mensagem" }`.
 | POST | `/senhas/chamar` | `{atendente_id, guiche_id}` — chama a próxima | Usa transação e `FOR UPDATE` |
 | POST | `/senhas/repetir` | Segunda chamada da última senha | Não filtra por guichê nem limita a uma vez |
 | GET | `/guiches` | Guichês ativos | — |
+| GET | `/relatorios/diario` | Resumo do dia (`?data=YYYY-MM-DD`) | Gestor |
+| GET | `/relatorios/mensal` | Resumo do mês (`?mes=YYYY-MM`) | Gestor |
+| GET | `/relatorios/detalhado` | Lista do dia (`?data=&tipo=SP\|SE\|SG`) | Gestor |
+| GET | `/relatorios/auditoria` | Chamadas do dia | Gestor |
 
 ## Prevista (necessária para integrar o frontend)
 
@@ -22,10 +26,7 @@ URL base local: `http://localhost:3000/api`. Erros: `{ "erro": "mensagem" }`.
 | POST | `/senhas/iniciar` | Inicia atendimento | Autenticado |
 | POST | `/senhas/finalizar` | Finaliza atendimento | Autenticado |
 | POST | `/senhas/nao-compareceu` | Marca abandono após 2 chamadas | Autenticado |
-| GET | `/relatorios/diario` | Resumo do dia | Gestor |
-| GET | `/relatorios/mensal` | Resumo do mês | Gestor |
-| GET | `/relatorios/detalhado` | Lista detalhada | Gestor |
-| GET | `/relatorios/auditoria` | Auditoria de chamadas | Gestor |
+
 
 ## Status HTTP
 

@@ -25,6 +25,10 @@ O back-end está em `backend/` e usa Express para responder às rotas do sistema
 | GET | `/api/senhas/fila` | fila em espera |
 | POST | `/api/senhas/chamar` | chama a próxima senha |
 | POST | `/api/senhas/repetir` | segunda chamada |
+| GET | `/api/relatorios/diario` | indicadores do dia |
+| GET | `/api/relatorios/mensal` | indicadores do mês |
+| GET | `/api/relatorios/detalhado` | senhas do dia |
+| GET | `/api/relatorios/auditoria` | histórico de chamadas |
 
 ## Tabelas consultadas
 
@@ -76,8 +80,8 @@ DB_NAME
 - [x] Uso de MySQL em pool de conexão
 - [ ] Autenticação e autorização reais
 - [ ] Usuários e perfis em banco
-- [ ] Relatórios diários e mensais completos
-- [ ] Auditoria completa e versionada
+- [x] Relatórios diários e mensais (API)
+- [x] Auditoria de chamadas (API)
 - [ ] Migrations SQL e seed de dados
 - [ ] `.env.example` versionado
 
