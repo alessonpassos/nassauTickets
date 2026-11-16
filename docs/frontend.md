@@ -72,7 +72,7 @@ A interface usa:
 - [x] Login local em `sessionStorage`
 - [x] Estados de vazio, erro e sucesso na interface
 - [x] Acessibilidade básica e painel com áudio
-- [ ] Integração real com a API do back-end
+- [ ] Integração real com a API do back-end (relatórios: `GET /api/relatorios/*`)
 - [ ] Autenticação real e autorização por perfil
 - [ ] Persistência centralizada em MySQL
 

@@ -8,6 +8,7 @@ var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var senhasRouter = require("./routes/senhas");
 var guichesRouter = require("./routes/guiches");
+var relatoriosRouter = require("./routes/relatorios");
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use("/api", indexRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/senhas", senhasRouter);
 app.use("/api/guiches", guichesRouter);
+app.use("/api/relatorios", relatoriosRouter);
 
 app.use(function (req, res, next) {
   next(createError(404));
