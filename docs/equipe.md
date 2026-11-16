@@ -5,7 +5,7 @@
 | Nome | Matrícula | Papel |
 | ---- | -------- | ----- |
 | Alesson Passos | 01837765 | Scrum Master, Desenvolvedor |
-| Daniel do Nascimento | 01810958 | Documentador, Testador |
+| Daniel do Nascimento | 01810958 | Documentador, Desenvolvedor (página `/relatorios` e API de relatórios) |
 | Jefté Pedro | 01856102 | Desenvolvedor |
 | Luiz Alexandre | 01540149 | Testador |
 
