@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nassauTickets · Protótipo AV2</title>
+<style>
+:root{--deep:#052f38;--ink:#102e36;--muted:#49636a;--primary:#086b7c;--accent:#82e5df;--paper:#fff;--bg:#f0f7f7;--line:#d6e7e8;--pale:#dff4f3;--warm:#fff0cc;--warm-ink:#734400;--error:#972f26;--font:"Public Sans","Inter",system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button,a,input,select,textarea{outline-offset:4px}
+:focus-visible{outline:3px solid #198e9d}
+#titulo:focus{outline:none}
+a{color:inherit}
+button:disabled{opacity:.55;cursor:default}
+button:not(:disabled),select{cursor:pointer}
+h1,h2,h3,p{margin:0}
+h1{font-size:clamp(2rem,4vw,3.45rem);font-weight:750;line-height:1.04;letter-spacing:-.065em}
+h2{font-size:1.28rem;line-height:1.16;letter-spacing:-.035em}
+h3{font-size:1.08rem;letter-spacing:-.018em}
+small,.muted{color:var(--muted)}
+small,.meta{font-size:.83rem}
+.demo{min-height:44px;background:#e3efef;border-bottom:1px solid var(--line);display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:6px max(20px,calc((100vw - 1160px)/2));font-size:.81rem;color:#36575d}
+.demo-label{font-weight:750;letter-spacing:.025em}
+.demo-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.demo select,.demo button{background:#f7fbfb;border:1px solid #c0d8d9;border-radius:5px;padding:4px 8px}
+.top{background:var(--deep);color:white;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px max(24px,calc((100vw - 1160px)/2));min-height:68px}
+.brand{font-size:1.22rem;letter-spacing:-.06em;font-weight:780;display:inline-flex;align-items:center;gap:10px;text-decoration:none;white-space:nowrap}
+.brand b{color:#96ebe4;font-weight:780}
+.mark{position:relative;width:27px;height:19px;border:1.7px solid #a0f0e8;border-radius:4px;display:inline-grid;place-content:center}
+.mark::before{content:"";height:13px;border-left:1.5px dashed #a0f0e8;position:absolute;right:7px;top:1.2px}
+.mark::after{content:"";height:1.6px;background:#a0f0e8;width:7px;margin-right:7px}
+.nav{display:flex;gap:6px 18px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:.88rem}
+.nav a{text-decoration:none;color:#daeeee;padding:6px 0;white-space:nowrap}
+.nav a[aria-current=page]{color:#fff;border-bottom:2px solid var(--accent)}
+.nav button,.tv-head button{color:#e7fafa;border:1px solid #50787f;background:transparent;padding:6px 12px;border-radius:7px}
+.shell{max-width:1208px;margin:0 auto;padding:38px 24px 48px}
+.heading{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:26px}
+.heading p{margin-top:11px}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.73rem;font-weight:800;color:var(--primary);margin-bottom:11px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:43px;padding:9px 16px;border:1px solid #afced1;border-radius:8px;background:#fff;text-decoration:none;font-weight:700;font-size:.88rem;text-align:center}
+.btn:hover:not(:disabled){background:#e6f5f5}
+.btn.primary{background:var(--primary);color:white;border-color:var(--primary)}
+.btn.primary:hover:not(:disabled){background:#045461}
+.btn.danger{color:var(--error)}
+.button-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.card{border:1px solid var(--line);background:#fff;border-radius:16px;padding:23px;min-width:0}
+.card-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+.note{border-left:4px solid var(--primary);background:#e0f3f2;color:#104c54;border-radius:7px;padding:12px 15px;margin:0 0 17px;font-size:.91rem}
+.note[role=alert]{border-color:var(--error);background:#fff0ea;color:#782b24}
+.note .btn{margin-left:8px;min-height:35px}
+.tag{display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:750;background:#e7eff1;color:#365961;border-radius:100px;padding:5px 10px;white-space:nowrap}
+.tag.SP{background:#fff0cc;color:#734400}
+.tag.SE{background:#d9f3ed;color:#0d5f54}
+.tag.SG{background:#e3edf4;color:#33546d}
+.field{display:grid;gap:5px;font-size:.88rem;font-weight:680;min-width:0}
+.field :is(input,select,textarea){border:1px solid #b9d3d5;border-radius:8px;background:#fff;min-height:44px;padding:9px 11px;width:100%;font-weight:480}
+.field textarea{min-height:64px;resize:vertical}
+.field small{font-weight:430}
+input[aria-invalid=true]{border-color:var(--error)}
+.stack{display:grid;gap:15px}
+.inline{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills .btn[aria-pressed=true]{color:#fff;background:var(--primary);border-color:var(--primary)}
+.scroll-table{overflow:auto}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:.88rem}
+th,td{padding:11px 10px;border-bottom:1px solid #e2edee}
+th{font-size:.76rem;color:var(--muted);white-space:nowrap;background:#f6fafa}
+td{font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.code{font-feature-settings:"tnum";font-variant-numeric:tabular-nums;letter-spacing:-.035em;font-weight:760;white-space:nowrap}
+.date{text-align:right;color:var(--muted);font-size:.86rem;font-weight:600;white-space:nowrap}
+.home-hero{padding:45px 42px;background:var(--deep);border-radius:19px;overflow:hidden;position:relative;color:#fff}
+.home-hero::after{content:"";position:absolute;width:360px;height:360px;right:-77px;top:-128px;border:1px solid #4d8990;border-radius:50%;box-shadow:0 0 0 35px #073a43,0 0 0 36px #437e86,0 0 0 70px #0a4149,0 0 0 71px #316a71;pointer-events:none}
+.home-hero h1,.home-hero p{position:relative;z-index:1}
+.home-hero h1{max-width:600px;font-size:clamp(2.3rem,5vw,4.6rem)}
+.home-hero .kicker{color:#a0eee8}
+.home-hero .muted{color:#d1e9e9;margin-top:14px;max-width:500px}
+.home-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:21px}
+.home-grid a{text-decoration:none;display:grid;gap:19px;align-content:start}
+.home-grid a:hover{border-color:var(--primary)}
+.home-grid a p{font-size:.9rem;margin-top:7px}
+.arrow{color:var(--primary);font-weight:750;font-size:.85rem}
+.totem{min-height:calc(100vh - 112px);display:flex;flex-direction:column}
+.totem .shell{width:100%;margin:auto;max-width:1080px}
+.totem .heading{text-align:center;display:block;margin-bottom:30px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.choice{text-align:left;min-height:168px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;transition:border-color .15s,background .15s}
+.choice:not(:disabled):hover,.choice[aria-pressed=true]{border-color:var(--primary);background:#f7ffff}
+.choice[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--primary)}
+.choice .choice-title{margin-top:8px;font-weight:750;font-size:1.28rem;line-height:1.16;letter-spacing:-.035em}
+.choice .muted{font-size:.9rem}
+.totem-actions{display:flex;justify-content:center;margin-top:22px}
+.totem .primary{min-width:218px}
+.totem-footer{text-align:center;font-size:.85rem;color:var(--muted);padding:0 16px 16px}
+.receipt{text-align:center;margin:0 auto;max-width:610px;padding:27px}
+.receipt .code{font-size:clamp(1.7rem,7vw,4.1rem);line-height:1.12;margin:13px 0}
+.receipt .button-row{justify-content:center;margin-top:21px}
+.login{display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:970px;margin:36px auto;border:1px solid var(--line);border-radius:17px;overflow:hidden;background:white;min-height:440px}
+.login-aside{display:flex;flex-direction:column;justify-content:space-between;background:var(--deep);color:#fff;padding:34px}
+.login-aside h2{font-size:clamp(2rem,4vw,3.5rem);line-height:1.03;letter-spacing:-.06em}
+.login-aside p{color:#bfe4e6}
+.login-main{padding:32px clamp(24px,5vw,59px);display:grid;align-content:center;gap:17px}
+.login-main h1{font-size:2.55rem}
+.login-help{border-top:1px solid var(--line);padding-top:12px;font-size:.81rem}
+.desk-grid{display:grid;grid-template-columns:1fr 1.03fr;gap:16px}
+.active{background:var(--deep);color:#fff;border-color:var(--deep);min-height:245px}
+.active .kicker,.active .muted{color:#bdeae9}
+.active .code{font-size:clamp(1.4rem,4.5vw,3.3rem);line-height:1.08;margin:8px 0 5px}
+.active .button-row{margin-top:20px}
+.active .btn{border-color:#74a4ab;background:transparent;color:#fff}
+.active .btn:hover:not(:disabled){background:#174951}
+.active .primary{background:#91e9df;color:#092e34;border-color:#91e9df}
+.active .primary:hover:not(:disabled){background:#c1f5ee}
+.active .danger{color:#ffdbd1}
+.detail{margin-top:16px}
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.timeline div{border-top:2px solid var(--line);padding-top:6px;min-width:0}
+.timeline span{display:block;font-weight:690;font-size:.88rem}
+.queue-table td,.queue-table th{padding:8px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin:18px 0}
+.stat{display:grid;gap:7px;padding:15px;align-content:start}
+.stat strong{font-size:clamp(1.32rem,2.8vw,2rem);letter-spacing:-.055em}
+.filters{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:17px}
+.filters .field{min-width:143px}
+.admin-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.tv{min-height:calc(100vh - 44px);background:#071e29;color:#f6ffff;padding:26px max(26px,calc((100vw - 1160px)/2)) 27px}
+.tv-head{display:flex;justify-content:space-between;align-items:center;gap:13px;margin-bottom:27px}
+.tv-head .brand{font-size:1.18rem}
+.tv-head .date{color:#abd3d8}
+.tv h1{font-size:clamp(1.75rem,4vw,2.8rem);margin-bottom:17px}
+.tv-current{background:#a0eee4;color:#0b3037;border-radius:15px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 30px;margin-bottom:18px}
+.tv-current .kicker{color:#225958}
+.tv-current .code{font-size:clamp(1.65rem,7.3vw,5.45rem);line-height:1}
+.guiche-tv{min-width:118px;border-left:1px solid #519a96;padding-left:20px;text-align:center}
+.guiche-tv strong{display:block;font-size:clamp(2.1rem,5vw,4.55rem);line-height:1}
+.tv-history{border:1px solid #2b4954;border-radius:12px;overflow:hidden}
+.tv-history h2{padding:12px 16px;background:#12323e;color:#e8ffff}
+.tv table{font-size:1rem}
+.tv th{color:#afced3;background:#0e2935}
+.tv :is(td,th){border-color:#284650;padding:9px 16px}
+.tv td .code{font-size:1.1rem}
+.tv .note{color:#f7fff9;background:#263c45;border-color:#aae8e1}
+.tv .note[role=alert]{color:#fff0e3;border-color:#ffc482;background:#3a3330}
+.foot{padding:12px 24px 20px;color:var(--muted);font-size:.78rem;text-align:center}
+[hidden]{display:none!important}
+@media(max-width:850px){.home-grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){
+  .shell{padding:25px 17px 32px}.top{padding:12px 16px;align-items:flex-start;flex-wrap:wrap}.nav{justify-content:flex-start}
+  .heading,.filters{align-items:flex-start;flex-direction:column}.date{text-align:left}
+  .choices,.desk-grid,.login,.admin-grid{grid-template-columns:1fr}.choice{min-height:110px;gap:5px}.choice .choice-title{margin-top:0}
+  .login{margin:23px 15px}.login-aside{padding:18px;gap:12px}.login-aside h2{display:none}
+  .home-hero{padding:29px 24px}.home-hero::after{opacity:.27}
+  .home-grid{gap:9px}.home-grid .card{padding:15px}.card{padding:16px}.stats{grid-template-columns:repeat(2,1fr)}
+  .timeline{grid-template-columns:repeat(2,1fr)}.tv{padding:18px 16px}.tv-current{padding:17px 12px}.guiche-tv{min-width:auto;padding-left:12px}
+  .tv-head{align-items:flex-start;flex-wrap:wrap}.tv th,.tv td{padding:8px}.tv td .code{font-size:.95rem}
+}
+@media(max-width:350px){.home-grid,.inline{grid-template-columns:1fr}.tv-current .code{font-size:1.4rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<aside class="demo" aria-label="Controles de demonstração">
+  <span class="demo-label">Protótipo AV2 · Dados fictícios</span>
+  <div class="demo-actions">
+    <label for="cenario">Cenário</label>
+    <select id="cenario"><option value="normal">Normal</option><option value="lento">Carregamento lento</option><option value="falha">Serviço indisponível</option><option value="vazio">Sem registros</option><option value="fechado">Fora do expediente</option></select>
+    <button id="reset" type="button">Reiniciar demonstração</button>
+  </div>
+</aside>
+<div id="app"></div>
+<script>
+"use strict";
+const dia = "2026-11-16";
+const tipos = {SP:"Prioritária", SE:"Retirada de exames", SG:"Geral"};
+const nomesEstado = {AGUARDANDO:"Aguardando", CHAMADA:"Chamada", CHAMADA_NOVAMENTE:"Última chamada", EM_ATENDIMENTO:"Em atendimento", ATENDIDA:"Atendida", NAO_COMPARECEU:"Não compareceu"};
+const ativos = ["CHAMADA","CHAMADA_NOVAMENTE","EM_ATENDIMENTO"];
+const protegidas = ["atendente","relatorios","cadastros"];
+const rotas = {"inicio":"Início","totem":"Totem","totem/retirar":"Totem no celular","painel-de-senha":"Painel de chamadas","login":"Entrar","atendente":"Atendimento","relatorios":"Relatórios","cadastros":"Cadastros", "acesso-negado":"Acesso restrito"};
+const conta = {atendente:{nome:"Ana Lima",perfil:"Atendente"},gestor:{nome:"Bruno Costa",perfil:"Gestor"}};
+const cadastroInicial = () => [{nome:"Ana Lima",login:"atendente",perfil:"Atendente",ativo:true},{nome:"Bruno Costa",login:"gestor",perfil:"Gestor",ativo:true}];
+const guichesIniciais = () => [{numero:1,ativo:true},{numero:2,ativo:true},{numero:3,ativo:true}];
+const app = document.getElementById("app");
+const cenarioInput = document.getElementById("cenario");
+
+function sessaoArmazenada(){
+  try { const chave=sessionStorage.getItem("nassau-av2-perfil"); return Object.hasOwn(conta,chave)?conta[chave]:null; }
+  catch { return null; }
+}
+function salvarSessao(chave){
+  sessao = chave ? conta[chave] : null;
+  try { if(chave) sessionStorage.setItem("nassau-av2-perfil",chave); else sessionStorage.removeItem("nassau-av2-perfil"); } catch {}
+}
+function criarSenha(tipo,seq,emissao,diaSenha=dia){
+  const inicioCodigo=diaSenha.slice(2).replaceAll("-","");
+  return {codigo:inicioCodigo+"-"+tipo+String(seq).padStart(3,"0"), tipo, seq, dia:diaSenha, emissao, estado:"AGUARDANDO", chamadas:[]};
+}
+function dadosIniciais(){
+  const chamadas=[
+    ["SG",14,"09:28","09:32",2,"09:33","09:38"],
+    ["SP",6,"09:30","09:37",1,"09:38","09:49"],
+    ["SE",4,"09:34","09:40",3,"",""],
+    ["SG",15,"09:36","09:42",2,"09:43","09:48"],
+    ["SP",7,"09:40","09:46",1,"09:47","09:55"]
+  ].map(([tipo,seq,emissao,hora,guiche,inicio,fim])=>Object.assign(criarSenha(tipo,seq,emissao),{estado:inicio?"ATENDIDA":"NAO_COMPARECEU",chamadas:inicio?[hora]:[hora,"09:41"],guiche,atendente:guiche===1?"Bruno Costa":"Ana Lima",inicio,fim}));
+  const fila=[["SE",5,"09:49"],["SP",8,"09:50"],["SG",16,"09:51"],["SE",6,"09:52"],["SG",17,"09:54"],["SP",9,"09:55"],["SG",18,"09:56"],["SG",19,"09:58"]].map(([tipo,seq,emissao])=>criarSenha(tipo,seq,emissao));
+  const anterior=Object.assign(criarSenha("SE",1,"10:02","2026-11-13"),{estado:"ATENDIDA",chamadas:["10:04"],guiche:2,atendente:"Ana Lima",inicio:"10:05",fim:"10:07"});
+  return [...chamadas,...fila,anterior];
+}
+let senhas=dadosIniciais(), usuarios=cadastroInicial(), guiches=guichesIniciais(), ultimoGrupo="SP", minuto=600, sessao=sessaoArmazenada();
+let tela="", retorno="atendente", usuarioDigitado="", cenario="normal", selecionado="", comprovante=null, guiche=2, relatorio="diario", periodicidade="dia", periodoDia=dia, periodoMes=dia.slice(0,7), filtro="TODOS", cadastro="guiches", editando=null, mensagem=null, pendente=false, geracao=0, comSom=false, falhasVistas=new Set(), tvCache=[];
+function tempo(){const hora=Math.floor(minuto/60);return String(hora).padStart(2,"0")+":"+String(minuto%60).padStart(2,"0")}
+function avancar(){const horario=tempo();minuto++;return horario}
+function seguro(x){return String(x ?? "").replace(/[&<>"']/g,simbolo=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[simbolo]))}
+function extrairRota(){return Object.hasOwn(rotas,location.hash.slice(2))?location.hash.slice(2):"inicio"}
+function ir(pagina){if(tela===pagina&&extrairRota()===pagina){render();return} location.hash="/"+pagina}
+function link(rota,label=rotas[rota],classe=""){return `<a class="${classe}" href="#/${rota}" ${tela===rota?'aria-current="page"':""}>${label}</a>`}
+function marca(){return '<a href="#/inicio" class="brand" aria-label="nassauTickets, início"><span class="mark" aria-hidden="true"></span><span>nassau<b>Tickets</b></span></a>'}
+function cabecalho(publica=false){
+  const links=publica?link("painel-de-senha"):link("inicio")+link("totem")+link("painel-de-senha")+(sessao?link("atendente"):link("login"))+(sessao?.perfil==="Gestor"?link("relatorios")+link("cadastros"):"");
+  return `<header class="top">${marca()}<nav class="nav" aria-label="Navegação">${links}${sessao&&!publica?'<button data-acao="sair" type="button">Sair</button>':""}</nav></header>`;
+}
+function btn(label,acao,estilo="",bloqueado=false,valor=""){
+  return `<button type="button" class="btn ${estilo}" data-acao="${acao}" data-valor="${seguro(valor)}" ${bloqueado?"disabled":""}>${label}</button>`;
+}
+function erroTela(){
+  const offline=["totem","totem/retirar","atendente","painel-de-senha","relatorios","cadastros"].includes(tela);
+  if(pendente) return '<div class="note" role="status" aria-live="polite">Carregando…</div>';
+  if(cenario==="falha"&&offline&&!falhasVistas.has(tela)){
+    const aviso=tela==="painel-de-senha"?(tvCache.length?"Conexão indisponível. Exibindo as últimas chamadas conhecidas.":"Conexão indisponível. Nenhuma chamada foi carregada."):tela==="atendente"?"Não foi possível conectar. As operações do guichê estão bloqueadas.":"Serviço indisponível. Tente novamente.";
+    return `<div class="note" role="alert">${aviso} ${btn("Tentar novamente","tentar")}</div>`;
+  }
+  if(!mensagem) return "";
+  return `<div class="note" role="${mensagem.erro?"alert":"status"}">${seguro(mensagem.texto)}${mensagem.erro?' '+btn("Tentar novamente","tentar"):""}</div>`;
+}
+function heading(titulo,sub,extra=""){return `<div class="heading"><div><h1 id="titulo" tabindex="-1">${titulo}</h1>${sub?'<p class="muted">'+sub+'</p>':""}</div>${extra}</div>`}
+function dataBr(valor){return valor.split("-").reverse().join("/")}
+function tag(tipo){return `<span class="tag ${tipo}">${tipo}</span>`}
+function tabela(colunas,linhas,vazio){
+  if(!linhas.length) return `<p class="muted">${vazio}</p>`;
+  return `<div class="scroll-table"><table><thead><tr>${colunas.map(col=>`<th scope="col">${col}</th>`).join("")}</tr></thead><tbody>${linhas.map(celulas=>`<tr>${celulas.map(celula=>`<td>${celula??""}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+const codigo = senha => '<span class="code">'+senha.codigo+'</span>';
+const bloqueado = () => pendente || (cenario==="falha"&&!falhasVistas.has(tela));
+const filaDoDia = () => senhas.filter(s=>s.dia===dia && s.estado==="AGUARDANDO" && !s.descartada);
+const atual = () => senhas.find(s=>s.guiche===guiche && ativos.includes(s.estado));
+const recentes = () => senhas.filter(s=>s.dia===dia && s.chamadas.length).sort((a,b)=>b.chamadas.at(-1).localeCompare(a.chamadas.at(-1))).slice(0,5);
+function paginaInicio(){
+  const itens=[["totem","Retirar senha","Escolha o tipo de atendimento e gere sua senha."],["painel-de-senha","Painel de chamadas","Veja as senhas chamadas e o guichê de atendimento."],["atendente","Área do atendente","Chame a fila e acompanhe o atendimento no guichê."],["relatorios","Relatórios","Consulte indicadores e auditoria com acesso de gestor."]];
+  return `${cabecalho()}<main class="shell"><section class="home-hero"><p class="kicker">Laboratório de análises clínicas</p><h1 id="titulo" tabindex="-1">Controle de atendimento</h1><p class="muted">Retire sua senha, acompanhe a chamada ou acesse a área de trabalho do laboratório.</p></section><div class="home-grid">${itens.map(([rota,nome,descricao])=>`<a class="card" href="#/${rota}"><div><h2>${nome}</h2><p class="muted">${descricao}</p></div><span class="arrow">Abrir <span aria-hidden="true">→</span></span></a>`).join("")}</div></main>`;
+}
+function paginaTotem(){
+  const fechado=cenario==="fechado";
+  const textos={SP:"Para quem tem direito a atendimento prioritário.",SG:"Para atendimento de rotina no laboratório.",SE:"Para retirar resultados de exames."};
+  return `${cabecalho(true)}<div class="totem"><main class="shell">${heading("Retire sua senha",comprovante?"Guarde seu código e acompanhe o painel.":"Escolha o tipo de atendimento.")}${erroTela()}${fechado?'<div class="note" role="status">Emissão encerrada. O expediente é das 7h às 17h.</div>':""}
+  ${comprovante?`<section class="receipt card" aria-live="polite"><p class="kicker">Senha emitida</p><p>${tipos[comprovante.tipo]}</p><p class="code">${comprovante.codigo}</p><p class="muted">${dataBr(dia)} às ${comprovante.emissao} · Aguardando chamada</p><div class="button-row">${link("painel-de-senha","Ver painel","btn")}${btn("Concluir","concluir","primary")}</div></section>`:
+  `<div class="choices" role="group" aria-label="Tipo de atendimento">${["SP","SG","SE"].map(tipo=>`<button class="choice card" data-acao="tipo" data-valor="${tipo}" aria-pressed="${selecionado===tipo}" aria-label="${tipo} ${tipos[tipo]}" ${fechado||bloqueado()?"disabled":""}>${tag(tipo)}<span class="choice-title">${tipos[tipo]}</span><span class="muted">${textos[tipo]}</span></button>`).join("")}</div><div class="totem-actions">${btn("Emitir senha","emitir","primary",!selecionado||fechado||bloqueado())}</div>`}</main><footer class="totem-footer">Recepção · 7h às 17h · Horário de Recife${tela==="totem"?' · '+link("totem/retirar","Versão para celular"):""}</footer></div>`;
+}
+function paginaLogin(){
+  const m=mensagem&&mensagem.erro;
+  return `${cabecalho()}<main class="login"><aside class="login-aside">${marca()}<h2>Atendimento<br>do laboratório.</h2><p>Área do atendente e do gestor</p></aside><section class="login-main"><div><h1 id="titulo" tabindex="-1">Entrar</h1><p class="muted">Use sua conta para acessar o sistema.</p></div>${erroTela()}<form id="form-login" class="stack"><label class="field">Usuário<input name="usuario" autocomplete="username" required value="${seguro(usuarioDigitado)}" ${m?"aria-invalid=true":""}></label><label class="field">Senha<input name="senha" type="password" autocomplete="current-password" required ${m?"aria-invalid=true":""}></label><button class="btn primary" ${pendente?"disabled":""}>Entrar</button></form><div class="login-help"><p><strong>Contas de demonstração</strong></p><p>Usuário: atendente ou gestor · Senha: demo</p></div></section></main>`;
+}
+function paginaPainel(){
+  const offline=bloqueado();
+  const chamadas=offline?tvCache:recentes();
+  if(!offline) tvCache=chamadas.map(s=>({...s,chamadas:[...s.chamadas]}));
+  const [ultima,...anteriores]=chamadas;
+  const ultimaChamada=ultima?.chamadas.length===2;
+  return `<main class="tv"><header class="tv-head">${marca()}<div class="nav"><span class="date">${dataBr(dia)} · ${cenario==="fechado"?"17:00":tempo()}</span><button data-acao="som" type="button" aria-pressed="${comSom}">${comSom?"Desativar":"Ativar"} som</button>${link("inicio","Voltar","back-demo")}</div></header><h1 id="titulo" tabindex="-1">Painel de chamadas</h1>${erroTela()}
+  ${ultima?`<div class="tv-current" aria-live="polite"><div><p class="kicker">${ultimaChamada?"Última chamada":"Chamada mais recente"} · ${tipos[ultima.tipo]}</p><p class="code">${ultima.codigo}</p></div><div class="guiche-tv"><span>Guichê</span><strong>${String(ultima.guiche).padStart(2,"0")}</strong></div></div><section class="tv-history"><h2>Chamadas anteriores</h2>${anteriores.length?tabela(["Senha","Tipo","Guichê","Horário"],anteriores.map(s=>[codigo(s),tipos[s.tipo],String(s.guiche).padStart(2,"0"),s.chamadas.at(-1)]),""):'<p style="padding:14px 16px">Nenhuma chamada anterior.</p>'}</section>`:`<div class="tv-current"><div><p class="kicker">Chamadas</p><h2>${offline?"Aguardando conexão":"Nenhuma senha chamada"}</h2><p>${offline?"Aguarde a atualização do painel.":"Acompanhe seu número nesta tela."}</p></div></div>`}</main>`;
+}
+function acoesDoAtendente(senha,travado){
+  if(!senha) return btn("Chamar próxima senha","chamar","primary",travado||cenario==="fechado"||!filaDoDia().length);
+  if(senha.estado==="CHAMADA") return btn("Iniciar atendimento","iniciar","primary",travado||cenario==="fechado")+btn("Chamar novamente","repetir","",travado||cenario==="fechado");
+  if(senha.estado==="CHAMADA_NOVAMENTE") return btn("Iniciar atendimento","iniciar","primary",travado||cenario==="fechado")+btn("Não compareceu","ausente","danger",travado);
+  return btn("Finalizar atendimento","finalizar","primary",travado);
+}
+function paginaAtendente(){
+  const senha=atual(), fila=filaDoDia(), travado=bloqueado();
+  const disp=guiches.filter(item=>item.ativo);
+  const controle=`<label class="field">Guichê<select id="guiche" ${!disp.length||travado?"disabled":""}>${disp.length?disp.map(item=>`<option value="${item.numero}" ${item.numero===guiche?"selected":""}>Guichê ${String(item.numero).padStart(2,"0")}</option>`).join(""):'<option>Nenhum disponível</option>'}</select></label>`;
+  const registro=senha?.registro;
+  const ficha=senha?.estado==="EM_ATENDIMENTO"?`<form id="form-ficha" class="stack"><div class="inline"><label class="field">Tipo de atendimento<select name="tipo" required>${opcoes(["Exame","Exame de sangue","Vacinação","Retirada de resultado"],registro?.tipo)}</select></label><label class="field">Encaminhar para<select name="setor" required>${opcoes(["Sala de exames","Sala de vacinação","Laboratório","Recepção"],registro?.setor)}</select></label></div><label class="field">Observação operacional (opcional)<textarea name="obs" maxlength="200" placeholder="Registre apenas informações operacionais.">${seguro(registro?.obs)}</textarea><small>Evite nomes, CPF e dados de saúde.</small></label><div class="button-row"><button class="btn" ${travado?"disabled":""}>Salvar registro</button></div></form>`:'<p class="muted">Inicie o atendimento para preencher o registro do guichê.</p>';
+  return `${cabecalho()}<main class="shell">${heading("Atendimento",seguro(sessao.nome)+" · "+sessao.perfil,controle)}${erroTela()}${cenario==="fechado"?'<div class="note" role="status">Expediente encerrado. Finalize o atendimento que já estiver em andamento.</div>':""}<div class="desk-grid"><section class="card active"><p class="kicker">Guichê ${disp.length?String(guiche).padStart(2,"0"):"indisponível"}</p><h2>${senha?"Senha em atendimento":"Aguardando nova chamada"}</h2>
+  ${senha?`<p class="code">${senha.codigo}</p><p class="muted">${tipos[senha.tipo]} · ${nomesEstado[senha.estado]}</p>`:'<p class="muted" style="margin-top:11px">Nenhuma senha ativa neste guichê.</p>'}<div class="button-row">${acoesDoAtendente(senha,travado||!disp.length)}</div></section>
+  <section class="card queue-table"><div class="card-title"><h2>Fila de espera</h2><span class="tag">${fila.length} aguardando</span></div>${tabela(["Emissão","Senha","Tipo"],fila.slice(0,6).map(s=>[s.emissao,codigo(s),tag(s.tipo)]),"Nenhuma senha aguardando.")}${fila.length>6?'<p class="meta muted">Exibindo 6 de '+fila.length+' senhas em ordem de emissão.</p>':""}</section></div>
+  <section class="card detail"><div class="card-title"><h2>Registro do atendimento</h2>${senha?'<span class="tag">'+nomesEstado[senha.estado]+'</span>':""}</div>${ficha}${senha?`<div class="timeline">${["1ª chamada","2ª chamada","Início","Fim"].map((r,i)=>`<div><small>${r}</small><span>${[senha.chamadas[0],senha.chamadas[1],senha.inicio,senha.fim][i]||"—"}</span></div>`).join("")}</div>`:""}</section></main>`;
+}
+function opcoes(valores,valor){return '<option value="">Selecione</option>'+valores.map(v=>`<option ${v===valor?"selected":""}>${v}</option>`).join("")}
+function quantidade(linhas,estado){return linhas.filter(s=>s.estado===estado).length}
+function numeroMin(hora){const [h,m]=hora.split(":").map(Number);return h*60+m}
+function media(linhas){
+  const finalizadas=linhas.filter(s=>s.estado==="ATENDIDA"&&s.inicio&&s.fim);
+  if(!finalizadas.length) return "—";
+  const total=finalizadas.reduce((s,v)=>s+numeroMin(v.fim)-numeroMin(v.inicio),0);
+  return (total/finalizadas.length).toLocaleString("pt-BR",{maximumFractionDigits:1})+" min";
+}
+function paginaRelatorios(){
+  const abas=[["diario","Diário"],["mensal","Mensal"],["detalhado","Detalhado"],["auditoria","Auditoria"]];
+  const resumo=["diario","mensal"].includes(relatorio);
+  const mensal=relatorio==="mensal"||(!resumo&&periodicidade==="mes");
+  const periodo=mensal?periodoMes:periodoDia;
+  const registros=senhas.filter(s=> s.dia.startsWith(periodo));
+  const dados=filtro==="TODOS"?registros:registros.filter(s=>s.tipo===filtro);
+  const indicadores=[["Emitidas",registros.length],["Atendidas",quantidade(registros,"ATENDIDA")],["Não compareceu",quantidade(registros,"NAO_COMPARECEU")],["Descartadas",registros.filter(s=>s.descartada).length],["Tempo médio",media(registros)]];
+  let conteudo;
+  if(resumo){
+    conteudo=`<div class="stats">${indicadores.map(([rotulo,valor])=>`<div class="card stat"><small>${rotulo}</small><strong>${valor}</strong></div>`).join("")}</div><section class="card"><div class="card-title"><h2>Por tipo de senha</h2><span class="meta muted">${mensal?periodo.split("-").reverse().join("/"):dataBr(periodo)}</span></div>${tabela(["Tipo","Descrição","Emitidas","Atendidas","Tempo médio"],registros.length?Object.entries(tipos).map(([tipo,nome])=>{const grupo=registros.filter(s=>s.tipo===tipo);return [tag(tipo),nome,grupo.length,quantidade(grupo,"ATENDIDA"),media(grupo)];}):[],"Nenhuma senha emitida no período.")}</section>`;
+  }else if(relatorio==="detalhado"){
+    conteudo=`<section class="card"><div class="card-title"><h2>Senhas emitidas</h2></div>${tabela(["Senha","Tipo","Emissão","Atendimento","Guichê","Situação"],dados.map(s=>[codigo(s),tag(s.tipo),dataBr(s.dia)+" "+s.emissao,s.estado==="ATENDIDA"?dataBr(s.dia)+" "+s.inicio:"",s.estado==="ATENDIDA"?s.guiche:"",s.descartada?"Descartada":nomesEstado[s.estado]]),"Nenhuma senha para os filtros selecionados.")}</section>`;
+  }else{
+    conteudo=`<section class="card"><div class="card-title"><h2>Auditoria de chamadas</h2></div>${tabela(["Senha","Atendente","Guichê","1ª chamada","2ª chamada","Início","Fim"],dados.filter(s=>s.chamadas.length).map(s=>[codigo(s),seguro(s.atendente),s.guiche,...[s.chamadas[0],s.chamadas[1],s.inicio,s.fim].map(h=>h?dataBr(s.dia)+" "+h:"")]),"Nenhuma chamada para os filtros selecionados.")}</section>`;
+  }
+  const escopo=resumo?"":`<label class="field">Agrupar por<select id="periodicidade"><option value="dia">Dia</option><option value="mes" ${mensal?"selected":""}>Mês</option></select></label>`;
+  return `${cabecalho()}<main class="shell">${heading("Relatórios","Indicadores e histórico de atendimento.",'<span class="tag">Gestor</span>')}${erroTela()}<div class="filters"><div class="pills" aria-label="Tipo de relatório">${abas.map(([id,nome])=>`<button class="btn" data-acao="relatorio" data-valor="${id}" aria-pressed="${id===relatorio}">${nome}</button>`).join("")}</div><div class="button-row">${escopo}<label class="field">${mensal?"Mês":"Data"}<input id="periodo" type="${mensal?"month":"date"}" value="${periodo}"></label>${resumo?"":`<label class="field">Tipo<select id="filtro"><option value="TODOS">Todos</option>${Object.keys(tipos).map(t=>`<option ${filtro===t?"selected":""}>${t}</option>`).join("")}</select></label>`}</div></div>${conteudo}</main>`;
+}
+function paginaCadastros(){
+  const ehGuiche=cadastro==="guiches", item=editando===null?null:(ehGuiche?guiches:usuarios)[editando];
+  const linhas=ehGuiche?guiches.map((g,i)=>["Guichê "+String(g.numero).padStart(2,"0"),g.ativo?"Ativo":"Inativo",btn("Editar","editar","",bloqueado(),i)]):usuarios.map((u,i)=>[seguro(u.nome),seguro(u.login),u.perfil,u.ativo?"Ativo":"Inativo",btn("Editar","editar","",bloqueado(),i)]);
+  const campos=ehGuiche?`<label class="field">Número <input name="numero" inputmode="numeric" type="number" min="1" max="99" required value="${item?.numero??""}"></label>`:`<label class="field">Nome <input name="nome" required maxlength="120" value="${seguro(item?.nome)}"></label><label class="field">Usuário <input name="login" required maxlength="80" value="${seguro(item?.login)}"></label><label class="field">Perfil <select name="perfil"><option>Atendente</option><option ${item?.perfil==="Gestor"?"selected":""}>Gestor</option></select></label>`;
+  return `${cabecalho()}<main class="shell">${heading("Cadastros","Gerencie guichês e usuários da equipe.",'<span class="tag">Gestor</span>')}${erroTela()}<div class="pills" style="margin-bottom:15px"><button class="btn" data-acao="cadastro" data-valor="guiches" aria-pressed="${ehGuiche}">Guichês</button><button class="btn" data-acao="cadastro" data-valor="usuarios" aria-pressed="${!ehGuiche}">Usuários</button></div><div class="admin-grid"><section class="card"><div class="card-title"><h2>${ehGuiche?"Guichês":"Usuários"}</h2></div>${tabela(ehGuiche?["Guichê","Situação","Ação"]:["Nome","Usuário","Perfil","Situação","Ação"],linhas,"Nenhum cadastro.")}</section><section class="card"><div class="card-title"><h2>${item?"Editar cadastro":ehGuiche?"Novo guichê":"Novo usuário"}</h2></div><form id="form-cadastro" class="stack">${campos}<label><input type="checkbox" name="ativo" ${item?.ativo===false?"":"checked"}> Ativo</label><div class="button-row"><button class="btn primary" ${bloqueado()?"disabled":""}>Salvar cadastro</button>${item?btn("Cancelar","cancelar"):""}</div></form></section></div></main>`;
+}
+function acessoNegado(){return `${cabecalho()}<main class="shell">${heading("Acesso restrito","Esta área é reservada ao gestor.")}${link("atendente","Voltar ao atendimento","btn primary")}</main>`}
+const views={inicio:paginaInicio,totem:paginaTotem,"totem/retirar":paginaTotem,"painel-de-senha":paginaPainel,login:paginaLogin,atendente:paginaAtendente,relatorios:paginaRelatorios,cadastros:paginaCadastros,"acesso-negado":acessoNegado};
+function render(focoTitulo=false){
+  const foco=document.activeElement;
+  const seletor=foco?.id&&app.contains(foco)?"#"+foco.id:foco?.dataset?.acao&&app.contains(foco)?`[data-acao="${foco.dataset.acao}"][data-valor="${foco.dataset.valor??""}"]`:null;
+  document.title=rotas[tela]+" · nassauTickets";
+  app.innerHTML=views[tela]();
+  if(focoTitulo) document.getElementById("titulo")?.focus({preventScroll:true});
+  else if(seletor) (app.querySelector(seletor)||app.querySelector("[data-acao]"))?.focus({preventScroll:true});
+}
+function autorizar(){
+  const destino=extrairRota();
+  if(protegidas.includes(destino)&&!sessao){retorno=destino;location.replace("#/login");return}
+  if(["relatorios","cadastros"].includes(destino)&&sessao.perfil!=="Gestor"){location.replace("#/acesso-negado");return}
+  tela=destino; mensagem=null; render(true); window.scrollTo(0,0);
+}
+async function requisicao(operacao){
+  if(pendente) return;
+  const pagina=tela, token=++geracao;
+  pendente=true;mensagem=null;
+  render();
+  await new Promise(resolve=>setTimeout(resolve,cenario==="lento"?1250:140));
+  if(token!==geracao) return;
+  pendente=false;
+  if(pagina!==tela){render();return}
+  try {
+    if(cenario==="falha"&&!falhasVistas.has(tela)) throw new Error("Conexão indisponível. Tente novamente.");
+    const texto=operacao();
+    mensagem=texto?{texto}:null;
+  } catch(erro){mensagem={texto:erro.message,erro:true};}
+  render();
+}
+function anunciar(s){
+  if(!comSom||!("speechSynthesis" in window)) return;
+  const texto=(s.chamadas.length===2?"Última chamada. ":"")+(s.tipo==="SE"?"Retirada de exames":tipos[s.tipo])+", senha "+s.seq+", guichê "+s.guiche+".";
+  const fala=new SpeechSynthesisUtterance(texto);fala.lang="pt-BR";window.speechSynthesis.speak(fala);
+}
+function chamar(){
+  const fila=filaDoDia();
+  const ordem=ultimoGrupo==="SP"?["SE","SG","SP"]:["SP","SE","SG"];
+  const senha=ordem.map(t=>fila.find(s=>s.tipo===t)).find(Boolean);
+  if(!senha) throw new Error("Não há senhas aguardando.");
+  ultimoGrupo=senha.tipo==="SP"?"SP":"OUTRO";
+  Object.assign(senha,{estado:"CHAMADA",guiche,atendente:sessao.nome,chamadas:[avancar()]});
+  anunciar(senha);return "Senha "+senha.codigo+" chamada.";
+}
+function transicao(acao){
+  const senha=atual();
+  if(!senha) return;
+  if(acao==="repetir"){senha.estado="CHAMADA_NOVAMENTE";senha.chamadas.push(avancar());anunciar(senha);return "Última chamada registrada."}
+  if(acao==="iniciar"){senha.estado="EM_ATENDIMENTO";senha.inicio=avancar();return "Atendimento iniciado."}
+  if(acao==="finalizar"){senha.estado="ATENDIDA";senha.fim=avancar();return "Atendimento finalizado."}
+  senha.estado="NAO_COMPARECEU";return "Não comparecimento registrado. Guichê disponível.";
+}
+function emitir(){
+  const atual=senhas.filter(s=>s.dia===dia&&s.tipo===selecionado).reduce((max,s)=>Math.max(max,s.seq),0);
+  if(atual>=999) throw new Error("Limite diário de senhas atingido para este tipo.");
+  comprovante=criarSenha(selecionado,atual+1,avancar());senhas.push(comprovante);return "";
+}
+function trocaCenario(novo){
+  geracao++;pendente=false;mensagem=null;falhasVistas.clear();
+  if(cenario==="vazio"&&novo!=="vazio"){senhas=dadosIniciais();ultimoGrupo="SP";comprovante=null}
+  if(cenario==="fechado"&&novo!=="fechado") senhas.forEach(s=>{if(s.descartada==="17:00")delete s.descartada});
+  cenario=novo;cenarioInput.value=cenario;
+  if(novo==="vazio"){senhas=[];ultimoGrupo="SP";comprovante=null;tvCache=[]}
+  if(novo==="fechado") filaDoDia().forEach(s=>{s.descartada="17:00"});
+  if(novo==="lento"&&tela!=="inicio"){requisicao(()=>{});return}
+  render();
+}
+function resetar(){
+  salvarSessao(null);usuarioDigitado="";senhas=dadosIniciais();usuarios=cadastroInicial();guiches=guichesIniciais();ultimoGrupo="SP";minuto=600;
+  selecionado="";comprovante=null;guiche=2;relatorio="diario";periodicidade="dia";periodoDia=dia;periodoMes=dia.slice(0,7);filtro="TODOS";cadastro="guiches";editando=null;retorno="atendente";comSom=false;tvCache=[];
+  cenario="normal";trocaCenario("normal");ir("inicio");
+}
+document.getElementById("reset").addEventListener("click",resetar);
+cenarioInput.addEventListener("change",evento=>trocaCenario(evento.target.value));
+window.addEventListener("hashchange",autorizar);
+app.addEventListener("click",evento=>{
+  const botao=evento.target.closest("[data-acao]");
+  if(!botao) return;
+  const acao=botao.dataset.acao, valor=botao.dataset.valor;
+  if(acao==="sair"){salvarSessao(null);retorno="atendente";ir("login");return}
+  if(acao==="tentar"){
+    falhasVistas.add(tela);
+    if(tela==="login") {mensagem=null;render();app.querySelector('input[name="usuario"]').focus();return}
+    requisicao(()=> "Conexão restabelecida.");return;
+  }
+  if(acao==="som"){comSom=!comSom;if(!comSom&&"speechSynthesis" in window) window.speechSynthesis.cancel();render();return}
+  if(acao==="tipo"){selecionado=valor;mensagem=null;render();return}
+  if(acao==="concluir"){comprovante=null;selecionado="";render(true);return}
+  if(acao==="relatorio"){relatorio=valor;mensagem=null;render();return}
+  if(acao==="cadastro"){cadastro=valor;editando=null;mensagem=null;render();return}
+  if(acao==="editar"||acao==="cancelar"){editando=acao==="editar"?Number(valor):null;mensagem=null;render();return}
+  if(acao==="emitir") requisicao(emitir);
+  if(acao==="chamar") requisicao(chamar);
+  if(["repetir","iniciar","finalizar","ausente"].includes(acao)) requisicao(()=>transicao(acao));
+});
+app.addEventListener("change",evento=>{
+  const {id,value,type}=evento.target;
+  if(id==="guiche") guiche=Number(value);
+  else if(id==="filtro") filtro=value;
+  else if(id==="periodicidade") periodicidade=value;
+  else if(id==="periodo"&&value) {if(type==="month") periodoMes=value;else periodoDia=value}
+  else return;
+  mensagem=null;render();
+});
+app.addEventListener("submit",evento=>{
+  evento.preventDefault();
+  const form=evento.target, campos=Object.fromEntries(new FormData(form));
+  if(form.id==="form-login"){
+    const usuario=campos.usuario.trim().toLowerCase();
+    usuarioDigitado=campos.usuario;
+    requisicao(()=>{
+      if(!Object.hasOwn(conta,usuario)||campos.senha!=="demo"){throw new Error("Usuário ou senha incorretos.")}
+      salvarSessao(usuario);usuarioDigitado="";
+      ir(usuario==="gestor"&&retorno==="atendente"?"relatorios":retorno);
+      return "";
+    });
+  }
+  if(form.id==="form-ficha") requisicao(()=>{const senha=atual();if(senha){senha.registro=campos;return "Registro salvo nesta demonstração."}});
+  if(form.id==="form-cadastro") requisicao(()=>{
+    const lista=cadastro==="guiches"?guiches:usuarios;
+    const ativo=campos.ativo==="on";
+    let item;
+    if(cadastro==="guiches"){
+      item={numero:Number(campos.numero),ativo};
+      if(lista.some((g,i)=>g.numero===item.numero&&i!==editando)) throw new Error("Já existe um guichê com esse número.");
+      if(editando!==null&&senhas.some(s=>s.guiche===lista[editando].numero&&ativos.includes(s.estado))&&(!ativo||item.numero!==lista[editando].numero)) throw new Error("O guichê tem um atendimento ativo.");
+    }else{
+      item={nome:campos.nome.trim(),login:campos.login.trim().toLowerCase(),perfil:campos.perfil,ativo};
+      if(!item.nome||!item.login) throw new Error("Preencha nome e usuário.");
+      if(lista.some((u,i)=>u.login===item.login&&i!==editando)) throw new Error("Já existe um usuário com esse login.");
+      if(item.perfil==="Gestor"&&item.ativo&&lista.some((u,i)=>u.perfil==="Gestor"&&u.ativo&&i!==editando)) throw new Error("Já existe uma conta com perfil de gestor ativo.");
+    }
+    if(editando===null) lista.push(item);else lista[editando]=item;
+    if(cadastro==="guiches"&&!guiches.some(g=>g.numero===guiche&&g.ativo)) guiche=guiches.find(g=>g.ativo)?.numero??0;
+    editando=null;return "Cadastro salvo nesta demonstração.";
+  });
+});
+autorizar();
+</script>
+</body>
+</html>

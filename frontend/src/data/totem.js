@@ -8,6 +8,9 @@ export const TOTEM = {
   encerramento: 24,
 };
 
+export const IMPRESSAO_MS = 5000;
+export const AVISO_IMPRESSAO_MS = 10000;
+
 export const TIPOS_SENHA = [
   {
     codigo: "SG",

@@ -20,22 +20,17 @@ Esta pasta corresponde a `frontend/` no repositório acadêmico. Não inclui bac
 
 ## Rotas
 
-- `/totem`: exibe QR Code a partir de 768px; em telas menores, exibe o formulário.
-- `/totem/retirar?totem=recepcao-01`: abre o formulário em qualquer tamanho de tela; é o destino do QR Code.
-- `/atendente`, `/relatorios` e `/painel-de-senha`: telas originais preservadas.
-- `/`: abre `/totem` como entrada desta demonstração. Para manter a entrada anterior, altere apenas o redirecionamento em `src/App.jsx` para `/atendente`.
-
-O link do QR Code utiliza a origem atual, sem dados pessoais. Em desenvolvimento, abra o site pelo IP acessível na rede local: `localhost` no QR Code aponta para o próprio celular. No site publicado, o endereço é gerado automaticamente. A prévia do Sites é privada; para abri-la em outro dispositivo, utilize a mesma conta autorizada. O Totem em si não implementa login.
+- `/totem`: abre a seleção dos tipos de atendimento em qualquer tamanho de tela.
+- `/totem/retirar?totem=recepcao-01`: endereço alternativo para a mesma tela.
+- `/`: página inicial com acesso ao Totem, ao atendimento e ao painel de chamadas.
 
 ## Fluxo
 
-1. Abra a aba Totem em uma tela de computador.
-2. Leia o QR Code no celular ou escolha “Abrir neste dispositivo”.
-3. Informe um nome e selecione SG, SP ou SE.
-4. Gere e copie a senha. O comprovante permanece disponível após atualizar a página no mesmo navegador durante o expediente.
-5. Use “Emitir outra senha” para começar uma nova solicitação, mantendo os contadores.
+1. Abra o Totem e selecione atendimento geral, prioritário ou retirada de exames.
+2. Confira a senha no comprovante. Uma barra verde diminui durante os cinco segundos de impressão simulada.
+3. Após o aviso de conclusão, o Totem volta à seleção em dez segundos. O botão **Nova senha** permite voltar antes.
 
-Os PDFs não fornecem campos obrigatórios do cadastro do cliente nem um contrato HTTP de emissão. Por isso, este recorte solicita somente o nome de exibição e o tipo de atendimento. CPF, data de nascimento, informações clínicas e cadastro completo ficam fora do Totem. O nome é validado em memória e não é persistido. O totem demonstrativo é identificado como `recepcao-01`; seus dados estão centralizados em `src/data/totem.js`.
+O totem é identificado como `recepcao-01`. Seus dados, expediente e tempos de impressão estão em `src/data/totem.js`.
 
 ## Regras implementadas
 
@@ -44,10 +39,9 @@ Os PDFs não fornecem campos obrigatórios do cadastro do cliente nem um contrat
 - Contadores independentes por tipo, de 001 a 999, com reinício diário.
 - Datas e expediente de 7h até antes das 17h no fuso `America/Sao_Paulo`.
 - Bloqueio da emissão fora do expediente, inclusive no momento do envio.
-- Senhas de dias anteriores ou fora do expediente não são restauradas como válidas.
-- Validação do formulário, estado de envio, erros de armazenamento, erro de QR Code com nova tentativa, link de totem inválido e comprovante de sucesso.
+- Em telas pequenas e no endereço alternativo, a página pode restaurar o comprovante durante a janela de impressão e aviso.
+- Validação do formulário, estado de envio, erros de armazenamento, link de totem inválido e comprovante de sucesso.
 - Bloqueio de envio repetido no formulário e Web Locks, quando disponível, para serializar a emissão entre abas do mesmo navegador.
-- QR Code gerado localmente pela biblioteca `qrcode`; não envia seu conteúdo a serviços de terceiros.
 - Campos com rótulos, navegação por teclado, mensagens acessíveis e apresentação responsiva.
 
 ## Dados locais e limites
@@ -63,12 +57,11 @@ As outras telas mantêm as limitações do arquivo original: o painel de atendim
 ## Organização da alteração
 
 - `src/pages/Totem.jsx`: visão responsiva e coordenação do fluxo.
-- `src/components/QrCodeTotem.jsx`: QR Code e acesso alternativo.
 - `src/components/FormularioTotem.jsx`: dados controlados, validação e envio.
-- `src/components/ComprovanteTotem.jsx`: resultado, cópia e nova solicitação.
+- `src/components/ComprovanteTotem.jsx`: senha, progresso da impressão e retorno à seleção.
 - `src/components/IconeTotem.jsx`: ícones da nova interface.
 - `src/hooks/useFormatoTotem.js`: detecção reativa da largura da tela.
-- `src/data/totem.js`: informações do totem e tipos de atendimento.
+- `src/data/totem.js`: configuração do Totem e tipos de atendimento.
 - `src/services/totemService.js`: regras e persistência local.
 - `src/styles/totem.css`: estilos da nova tela, usando os tokens existentes.
 
@@ -76,7 +69,7 @@ Alterações pontuais em `App.jsx`, `Cabecalho.jsx`, `layout.css`, `index.html`,
 
 ## Verificação
 
-Verificadas as regras de horário e data de Brasília, validação, sequência por tipo, reinício diário, recuperação do comprovante, ausência do nome na persistência e erros de armazenamento. O frontend também deve passar pelo build de produção. A verificação visual em navegador não pôde ser realizada neste ambiente por indisponibilidade da prévia supervisionada.
+Para verificar a emissão, abra o Totem durante o expediente, selecione um tipo de atendimento e aguarde a barra, o aviso e o retorno automático. Para compilar a versão de produção, use `npm run build`.
 
 ## Autoria e entrega acadêmica
 

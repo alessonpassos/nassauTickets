@@ -52,7 +52,7 @@ export default function FormularioTotem({ aberto, aoEmitir }) {
       </div>
       {!aberto && (
         <p className="totem-aviso" role="status">
-          Emissão encerrada. Atendimento das 7h às 17h.
+          Emissão disponível das 7h às 17h, no horário de Brasília.
         </p>
       )}
       {erro && (
