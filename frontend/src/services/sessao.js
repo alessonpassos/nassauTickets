@@ -10,6 +10,8 @@ export function lerSessao() {
   }
 }
 
+export const obterSessao = lerSessao;
+
 // Guarda apenas nome e perfil; a senha nunca é armazenada.
 export function entrar(usuario, senha) {
   const achado = USUARIOS.find((u) => u.usuario === usuario.trim().toLowerCase() && u.senha === senha);
@@ -22,4 +24,12 @@ export function entrar(usuario, senha) {
 
 export function sair() {
   sessionStorage.removeItem(CHAVE);
+}
+
+export function salvarSessao(sessao) {
+  sessionStorage.setItem(CHAVE, JSON.stringify(sessao));
+}
+
+export function obterRotaInicial(perfil) {
+  return perfil === "gestor" ? "/relatorios" : "/atendente";
 }
