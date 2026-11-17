@@ -1,10 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Cabecalho from "../components/Cabecalho";
 import Relogio from "../components/Relogio";
-import useFila from "../hooks/useFila";
+import { api } from "../services/api";
 import { formatarHora, sequencia } from "../utils/formatar";
 import { narrarChamada, tocarSinal } from "../utils/audio";
 import "../styles/PainelSenhas.css";
+
+const INTERVALO_ATUALIZACAO = 4000;
+
+function traduzirChamada(item) {
+  return {
+    id: `${item.codigo}#${item.segunda_chamada_em == null ? 1 : 2}`,
+    numero: item.codigo,
+    senha: sequencia(item.codigo),
+    tipo: item.tipo,
+    guiche: item.guiche,
+    local: `Guichê ${item.guiche}`,
+    prioritario: item.tipo === "SP",
+    ultima: item.status === "CHAMADA_NOVAMENTE",
+    horario: new Date(item.segunda_chamada_em ?? item.primeira_chamada_em),
+  };
+}
 
 const tamanhoDaSenha = (s) =>
   s.length > 8 ? "muito-longo" : s.length > 6 ? "longo" : "normal";
@@ -16,72 +32,86 @@ export default function PainelSenhas({
   narrar = false,
   duracaoChamada = 10000,
 }) {
-  const { senhas } = useFila();
+  const [painel, setPainel] = useState({ chamadaAtual: null, chamadas: [] });
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
   const [audioLigado, setAudioLigado] = useState(false);
+  const [chamadaNova, setChamadaNova] = useState(null);
 
-  const chamadas = useMemo(
-    () =>
-      senhas
-        .filter((s) => s.chamadas?.length)
-        .map((s) => ({
-          id: `${s.numero}#${s.chamadas.length}`,
-          numero: s.numero,
-          senha: sequencia(s.numero),
-          tipo: s.tipo,
-          guiche: s.guiche,
-          local: `Guichê ${s.guiche}`,
-          prioritario: s.tipo === "SP",
-          ultima: s.estado === "CHAMADA_NOVAMENTE",
-          horario: new Date(s.chamadas.at(-1)),
-        }))
-        .sort((a, b) => b.horario - a.horario)
-        .slice(0, maxHistorico),
-    [senhas, maxHistorico]
-  );
-
-  const chamadaAtual = chamadas[0] ?? null;
+  const limite = Math.max(1, Math.min(5, maxHistorico));
+  const chamadas = painel.chamadas.slice(0, limite);
+  const chamadaAtual = painel.chamadaAtual;
   const idAtual = chamadaAtual?.id ?? null;
-
-  const [idVisto, setIdVisto] = useState(idAtual);
-  const [chamando, setChamando] = useState(false);
+  const chamando = chamadaNova !== null && chamadaNova.id === idAtual;
 
   useEffect(() => {
-    if (idAtual !== idVisto) {
-      setIdVisto(idAtual);
-      setChamando(idAtual !== null);
+    let cancelado = false;
+    let iniciado = false;
+    let idAnterior = null;
+    let temporizador;
+    let controle;
+
+    async function atualizar() {
+      controle = new AbortController();
+      try {
+        const dados = await api.get("/senhas/atual", undefined, {
+          autenticado: false,
+          signal: controle.signal,
+        });
+        if (cancelado) return;
+
+        const atual = dados.chamadaAtual ? traduzirChamada(dados.chamadaAtual) : null;
+        const historico = dados.historico.map(traduzirChamada);
+        const id = atual?.id ?? null;
+
+        // A primeira resposta apenas estabelece a chamada que já estava no painel.
+        if (iniciado && id !== idAnterior) setChamadaNova(atual);
+        idAnterior = id;
+        iniciado = true;
+        setPainel({
+          chamadaAtual: atual,
+          chamadas: [atual, ...historico].filter(Boolean).slice(0, 5),
+        });
+        setErro("");
+      } catch (falha) {
+        if (!cancelado) setErro(falha.message);
+      } finally {
+        if (!cancelado) {
+          setCarregando(false);
+          temporizador = setTimeout(atualizar, INTERVALO_ATUALIZACAO);
+        }
+      }
     }
-  }, [idAtual, idVisto]);
 
-  const chamadaRef = useRef(chamadaAtual);
+    atualizar();
+    return () => {
+      cancelado = true;
+      controle?.abort();
+      clearTimeout(temporizador);
+    };
+  }, []);
 
   useEffect(() => {
-    chamadaRef.current = chamadaAtual;
-  }, [chamadaAtual]);
-
-  useEffect(() => {
-    if (!chamando) return;
-
-    const fim = setTimeout(() => setChamando(false), duracaoChamada);
-
+    if (!chamadaNova) return;
+    const fim = setTimeout(() => setChamadaNova(null), duracaoChamada);
     return () => clearTimeout(fim);
-  }, [chamando, idAtual, duracaoChamada]);
+  }, [chamadaNova, duracaoChamada]);
 
   useEffect(() => {
-    if (!chamando || !audioLigado || !chamadaRef.current) return;
-
+    if (!chamadaNova || !audioLigado) return;
     if (som) tocarSinal();
 
     const fala = narrar
-      ? setTimeout(() => narrarChamada(chamadaRef.current), 1400)
+      ? setTimeout(() => narrarChamada(chamadaNova), 1400)
       : null;
 
     return () => {
       if (fala) clearTimeout(fala);
     };
-  }, [idAtual, chamando, audioLigado, som, narrar]);
+  }, [chamadaNova, audioLigado, som, narrar]);
 
   return (
-    <div className="painel" style={{ "--linhas": maxHistorico }}>
+    <div className="painel" style={{ "--linhas": limite }}>
       <p className="painel_sr" role="status" aria-live="polite">
         {chamadaAtual
           ? `Senha ${chamadaAtual.senha}, ${chamadaAtual.local}`
@@ -95,6 +125,11 @@ export default function PainelSenhas({
           </Cabecalho>
 
           <main className="painel_principal" data-chamando={chamando}>
+            {erro && (
+              <p className="msg msg--erro" role="alert">
+                {erro} A atualização será tentada novamente automaticamente.
+              </p>
+            )}
             {chamadaAtual ? (
               <section
                 key={idAtual}
@@ -147,7 +182,7 @@ export default function PainelSenhas({
             ) : (
               <section className="painel_espera">
                 <p className="painel_espera-titulo">
-                  Aguarde ser chamado
+                  {carregando ? "Carregando chamadas…" : "Aguarde ser chamado"}
                 </p>
 
                 <p className="painel_espera-texto">
@@ -176,7 +211,7 @@ export default function PainelSenhas({
           aria-label="Últimas chamadas"
         >
           <h2 className="painel_historico-titulo">
-            Últimas 5 chamadas
+            Últimas {limite} chamadas
           </h2>
 
           {chamadas.length > 0 ? (

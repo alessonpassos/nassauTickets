@@ -1,6 +1,18 @@
 // Cliente HTTP da API: envia o token JWT e trata 401 em um só lugar.
+import { obterSessao, sair } from "./sessao";
+
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/$/, "");
-const CHAVE_SESSAO = "nassautickets_sessao";
+export { obterSessao };
+
+export function traduzirSenha(senha) {
+  return {
+    ...senha,
+    numero: senha.codigo,
+    tipo: senha.tipo,
+    estado: senha.status,
+    emitidaEm: senha.emitida_em,
+  };
+}
 
 export class ErroApi extends Error {
   constructor(status, mensagem) {
@@ -10,31 +22,29 @@ export class ErroApi extends Error {
   }
 }
 
-export function obterSessao() {
-  try {
-    const salvo = localStorage.getItem(CHAVE_SESSAO);
-    return salvo ? JSON.parse(salvo) : null;
-  } catch {
-    return null;
-  }
-}
-
 function encerrarSessao() {
-  localStorage.removeItem(CHAVE_SESSAO);
+  sair();
   if (window.location.pathname !== "/login") {
     window.location.replace("/login");
   }
 }
 
-async function requisitar(metodo, caminho, { params, corpo } = {}) {
+async function requisitar(metodo, caminho, {
+  params,
+  corpo,
+  autenticado = true,
+  signal,
+} = {}) {
   const url = new URL(`${API_URL}${caminho}`);
   Object.entries(params ?? {}).forEach(([chave, valor]) => {
     if (valor != null && valor !== "") url.searchParams.set(chave, valor);
   });
 
   const headers = { "Content-Type": "application/json" };
-  const sessao = obterSessao();
-  if (sessao?.token) headers.Authorization = `Bearer ${sessao.token}`;
+  if (autenticado) {
+    const sessao = obterSessao();
+    if (sessao?.token) headers.Authorization = `Bearer ${sessao.token}`;
+  }
 
   let resposta;
   try {
@@ -42,8 +52,10 @@ async function requisitar(metodo, caminho, { params, corpo } = {}) {
       method: metodo,
       headers,
       body: corpo === undefined ? undefined : JSON.stringify(corpo),
+      signal,
     });
-  } catch {
+  } catch (erro) {
+    if (erro.name === "AbortError") throw erro;
     throw new ErroApi(0, "Não foi possível conectar ao servidor.");
   }
 
@@ -55,13 +67,13 @@ async function requisitar(metodo, caminho, { params, corpo } = {}) {
   }
 
   if (!resposta.ok) {
-    if (resposta.status === 401) encerrarSessao();
+    if (resposta.status === 401 && autenticado) encerrarSessao();
     throw new ErroApi(resposta.status, dados?.erro || "Erro ao comunicar com o servidor.");
   }
   return dados;
 }
 
 export const api = {
-  get: (caminho, params) => requisitar("GET", caminho, { params }),
-  post: (caminho, corpo) => requisitar("POST", caminho, { corpo }),
+  get: (caminho, params, opcoes) => requisitar("GET", caminho, { ...opcoes, params }),
+  post: (caminho, corpo, opcoes) => requisitar("POST", caminho, { ...opcoes, corpo }),
 };
