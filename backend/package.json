@@ -1,22 +1,21 @@
 {
   "name": "nassauTickets",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
+  "engines": { "node": ">=22" },
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www --trace-warnings --trace-sync-io"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.4",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
     "debug": "~2.6.9",
     "dotenv": "^18.0.3",
-    "express": "~4.16.1",
+    "express": "^4.21.2",
     "http-errors": "~1.6.3",
-    "ip": "^2.0.1",
-    "jade": "~1.11.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "~1.9.1",
-    "mysql": "^2.18.1",
     "mysql2": "^3.24.4"
   },
   "devDependencies": {

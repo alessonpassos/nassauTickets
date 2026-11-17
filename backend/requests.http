@@ -1,0 +1,125 @@
+### Extensão "REST Client" (humao.rest-client). Clique em "Send Request" acima de cada bloco.
+### Rode o login primeiro; os tokens ficam guardados nas variáveis.
+
+@host = http://localhost:3000/api
+
+### Health (testa o banco)
+GET {{host}}/health
+
+### Login atendente (crie antes: node scripts/criar_usuario.js ana "Ana" ana123 ATENDENTE)
+# @name loginAtendente
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "usuario": "ana", "senha": "ana123" }
+
+###
+@tokenAtendente = {{loginAtendente.response.body.token}}
+
+### Login gestor
+# @name loginGestor
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "usuario": "gil", "senha": "gil123" }
+
+###
+@tokenGestor = {{loginGestor.response.body.token}}
+
+### Totem emite senha (público)
+POST {{host}}/senhas
+Content-Type: application/json
+
+{ "tipo": "SG" }
+
+### Painel (público): 5 últimas chamadas
+GET {{host}}/senhas/atual
+
+### Fila do dia (atendente)
+GET {{host}}/senhas/fila
+Authorization: Bearer {{tokenAtendente}}
+
+### Chamar próxima (o atendente vem do token!)
+POST {{host}}/senhas/chamar
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "guiche_id": 1 }
+
+### Repetir chamada (1x)
+POST {{host}}/senhas/repetir
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "guiche_id": 1 }
+
+### Iniciar atendimento (troque o código)
+POST {{host}}/senhas/iniciar
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "codigo": "261116-SG001" }
+
+### Finalizar
+POST {{host}}/senhas/finalizar
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "codigo": "261116-SE003" }
+
+### Não compareceu (só após a 2ª chamada)
+POST {{host}}/senhas/nao-compareceu
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "codigo": "261116-SE004" }
+
+### Relatório diário (só gestor; com token de atendente deve dar 403)
+GET {{host}}/relatorios/diario
+Authorization: Bearer {{tokenGestor}}
+
+
+### Guichês (público) - veja quais ids existem
+GET {{host}}/guiches
+
+### Emitir SP
+POST {{host}}/senhas
+Content-Type: application/json
+
+{ "tipo": "SP" }
+
+### Emitir SE
+POST {{host}}/senhas
+Content-Type: application/json
+
+{ "tipo": "SE" }
+
+### 401 - sem token
+GET {{host}}/senhas/fila
+
+### 401 - token alterado
+GET {{host}}/senhas/fila
+Authorization: Bearer abc.def.ghi
+
+### 403 - atendente tentando ver relatório
+GET {{host}}/relatorios/diario
+Authorization: Bearer {{tokenAtendente}}
+
+### 403 - gestor tentando chamar senha
+POST {{host}}/senhas/chamar
+Authorization: Bearer {{tokenGestor}}
+Content-Type: application/json
+
+{ "guiche_id": 1 }
+
+### Relatório mensal
+GET {{host}}/relatorios/mensal
+Authorization: Bearer {{tokenGestor}}
+
+### Relatório detalhado
+GET {{host}}/relatorios/detalhado
+Authorization: Bearer {{tokenGestor}}
+
+### Relatório de auditoria
+GET {{host}}/relatorios/auditoria
+Authorization: Bearer {{tokenGestor}}
