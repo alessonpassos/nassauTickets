@@ -4,7 +4,7 @@ import Cabecalho from "../components/Cabecalho";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Rodape from "../components/Rodape";
 import InfoUsuario from "../components/InfoUsuario";
-import { lerSessao, sair } from "../services/sessao";
+import { obterSessao, ErroApi } from "../services/api";
 import {
   TIPOS,
   buscarDiario,
@@ -13,7 +13,6 @@ import {
   buscarAuditoria,
   normalizarDetalhado,
   normalizarAuditoria,
-  ErroRelatorio,
 } from "../services/relatorioService";
 import { horaCompleta } from "../utils/formatar";
 import "../styles/layout.css";
@@ -36,6 +35,12 @@ function hojeIso() {
 
 function mesAtualIso() {
   return hojeIso().slice(0, 7);
+}
+
+const ROTULO_PERFIL = { gestor: "Gestor", atendente: "Atendente" };
+
+function rotuloPerfil(perfil) {
+  return ROTULO_PERFIL[perfil] ?? "Usuário";
 }
 
 function CartaoIndicador({ rotulo, valor }) {
@@ -62,7 +67,7 @@ function Tabela({ colunas, linhas, vazio }) {
 }
 
 export default function Relatorios() {
-  const sessao = lerSessao();
+  const sessao = obterSessao();
   const navigate = useNavigate();
   const [aba, setAba] = useState("diario");
   const [data, setData] = useState(hojeIso);
@@ -96,12 +101,9 @@ export default function Relatorios() {
         }
       } catch (e) {
         if (cancelado) return;
-        if (e instanceof ErroRelatorio && e.status === 401) {
-          sair();
-          navigate("/login", { replace: true });
-          return;
-        }
-        if (e instanceof ErroRelatorio && e.status === 403) {
+        // 401 já é tratado pelo api.js (limpa a sessão e volta ao login)
+        if (e instanceof ErroApi && e.status === 401) return;
+        if (e instanceof ErroApi && e.status === 403) {
           navigate("/", { replace: true });
           return;
         }
@@ -123,7 +125,7 @@ export default function Relatorios() {
   return (
     <div className="pagina">
       <Cabecalho>
-        <InfoUsuario nomeUsuario={sessao.nome} funcao={`${sessao.funcao}, relatórios`} />
+        <InfoUsuario nomeUsuario={sessao?.usuario ?? ""} funcao={`${rotuloPerfil(sessao?.perfil)}, relatórios`} />
       </Cabecalho>
 
       <main className="pagina_corpo">
