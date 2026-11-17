@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import {requisicaoAutenticada} from "../services/sessao";
+import { useState, useEffect} from "react";
+import { lerSessao, sair } from "../services/sessao";
+import * as fila from "../services/filaService";
+import useFila from "../hooks/useFila";
+import { horarioTotem } from "../utils/horario";
 import Cabecalho from "../components/Cabecalho";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Rodape from "../components/Rodape";
@@ -7,127 +10,19 @@ import SenhaAtual from "../components/SenhaAtual";
 import FilaEspera from "../components/FilaEspera";
 import FichaPaciente from "../components/FichaPaciente";
 import InfoUsuario from "../components/InfoUsuario";
-import useFila from "../hooks/useFila";
-import { ObterSessao, sair } from "../services/sessao";
-import {listarFila} from "../services/filaService";
-import * as fila from "../services/filaService";
-import { horarioTotem } from "../utils/horario";
 import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
-const GUICHES = [1, 2, 3, 4, 5];
 const CHAVE_GUICHE = "nassautickets_guiche_atual";
 
-export const ATIVOS = ["CHAMADA", "EM_ATENDIMENTO"];
-
-async function tratarResposta(reposta, mensagemPadraoErro){
-  let dados = null;
-  try {
-    dados = await reposta.json();
-  } catch {
-    throw new Error(mensagemPadraoErro);
-  }
-
-  if (!reposta.ok) {
-    if (dados?.erro) {
-      throw new Error(
-        dados?.mensagem || dados?.erro ||
-        "Conflido de estado: esta ação não pode ser realizada porque a senha ou a fila já foi alterada."
-      );
-    }
-    throw new Error(dados?.mensagem || dados?.erro || mensagemPadraoErro);
-  }
-  return dados;
-}
-
-export async function listarFila(){
-  const resposta = await requisicaoAutenticada("/fila", {method: "GET"});
-  return tratarResposta(resposta, "Não foi possível listar a fila.");
-}
-
-export async function chamarProxima({guiche, atendente }) {
-  const resposta = await requisicaoAutenticada("/fila/chamar", {
-    method: "POST",
-    body: JSON.stringify({guiche, atendente}),
-  });
-  const dados = await tratarResposta(resposta, "Erro ao chamar a próxima senha.");
-  return dados?.mensagem || `Senha ${dados?.numero ?? ""} chamada no guichê ${guiche}.`;
-}
-
-export async function chamarNovamente(numero) {
-  const resposta = await requisicaoAutenticada(`/Fila/${encodeURIComponent(numero)}/chamar-novamente`,
-    {method: "POST"});
-  const dados = await tratarResposta(resposta, "Erro ao rechamar a senha.");
-  return dados?.mensagem || `Senha ${numero} chamada novamente.`;
-}
-
-export async function iniciarAtendimento(numero) {
-  const resposta = await requisicaoAutenticada(`/fila/${encodeURIComponent(numero)}/iniciar`, {
-    method: "PATCH",
-  });
-  const dados = await tratarResposta(resposta, "Erro ao iniciar o atendimento.");
-  return dados?.mensagem || `Atendimento da senha ${numero} iniciado.`;
-}
-
-export async function finalizarAtendimento(numero) {
-  const resposta = await requisicaoAutenticada(`/fila/${encodeURIComponent(numero)}/finalizar`, {
-    method: "PATCH",
-  });
-  const dados = await tratarResposta(resposta, "Erro ao finalizar o atendimento.");
-  return dados?.mensagem || `Atendimento da senha ${numero} finalizado.`;
-}
-
-export async function marcarNaoCompareceu(numero) {
-  const resposta = await requisicaoAutenticada(`/fila/${encodeURIComponent(numero)}/nao-compareceu`, {
-    method: "PATCH",
-  });
-  const dados = await tratarResposta(resposta, "Erro ao registrar não comparecimento.");
-  return dados?.mensagem || `Senha ${numero} marcada como não compareceu.`;
-}
-
-export async function salvarRegistro(numero, registro) {
-  const resposta = await requisicaoAutenticada(`/fila/${encodeURIComponent(numero)}/registro`, {
-    method: "PUT",
-    body: JSON.stringify(registro),
-  });
-  const dados = await tratarResposta(resposta, "Erro ao salvar a ficha do paciente.");
-  return dados?.mensagem || "Ficha do paciente salva com sucesso.";
-}
-
-export default function useFila(intervaloMs = 5000) {
-  const [senhas, setSenhas] = useState([]);
-  const [carregandoFila, setCarregandoFila] = useState(true);
-  const [erroFila, setErroFila] = useState(null);
-
-  const atualizarFila = useCallback(async () => {
-    try {
-      const dados = await listarFila();
-      setSenhas(Array.isArray(dados) ? dados : dados?.senhas ?? []);
-      setErroFila(null);
-    } catch (erro) {
-      setErroFila(erro.message);
-    } finally {
-      setCarregandoFila(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    atualizarFila();
-    const timer = setInterval(atualizarFila, intervaloMs);
-    return () => clearInterval(timer);
-  }, [atualizarFila, intervaloMs]);
-
-  return { senhas, carregandoFila, erroFila, atualizarFila };
-}
-
 function obterGuicheInicial() {
-  const salvo = number(sessionStorage.getItem(CHAVE_GUICHE));
-  return GUICHES.includes(salvo) ? salvo : 1;
+  const salvo = Number(sessionStorage.getItem(CHAVE_GUICHE));
+  return Number.isFinite(salvo) && salvo > 0 ? salvo : null;
 }
 
 export default function PainelAtendente() {
-  const sessao = ObterSessao();
-  const { senhas, carregandoFila, erroFila, atualizarFila } = useFila();
+  const sessao = lerSessao();
+  const { senhas = [], carregandoFila = false, erroFila = null, atualizarFila } = useFila();
 
   const [guiche, setGuiche] = useState(obterGuicheInicial());
   const [mensagem, setMensagem] = useState(null);
@@ -136,22 +31,52 @@ export default function PainelAtendente() {
   const nomeAtendente = sessao?.nome || sessao?.usuario || "Atendente";
   const funcaoAtendente = sessao?.funcao || "Atendimento";
 
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarGuiches() {
+      try {
+        const lista = await fila.listarGuiches();
+        if (!ativo || !Array.isArray(lista) || lista.length === 0) return;
+
+        setGuiches(lista);
+
+        setGuiche((atualId) => {
+          const existe = lista.some((g) => g.id === atualId);
+          const idValido = existe ? atualId : lista[0].id;
+          sessionStorage.setItem(CHAVE_GUICHE, String(idValido));
+          return idValido;
+        });
+      } catch (erro) {
+        if (ativo) {
+          setMensagem({
+            tipo: "erro",
+            texto: erro?.message || "Não foi possível carregar os guichês.",
+          });
+        }
+      }
+    }
+
+    carregarGuiches();
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
   function aoMudarGuiche(novoGuiche) {
     setGuiche(novoGuiche);
-    sessionStorage.setItem(CHAVE_GUICHE, string(novoGuiche));
+    sessionStorage.setItem(CHAVE_GUICHE, String(novoGuiche));
     setMensagem(null);
   }
 
   useEffect(() => {
-    if (mensagem?.tipo === "ok") return;
+    if (!mensagem || mensagem.tipo === "ok") return;
     const timer = setTimeout(() => setMensagem(null), 5000);
     return () => clearTimeout(timer);
   }, [mensagem]);
 
-  const {dia} = horarioTotem();
-  const doDia = senhas.filter((s) => s.dia || s.numero?.startwith(dia));
   const atual =
-    doDia.find((s) => s.guiche === guiche && fila.ATIVOS.includes(s.estado)) ?? null;
+    doDia.find((s) => (s.guiche_id ?? s.guiche) === guiche && fila.ATIVOS.includes(s.estado)) ?? null;
   const aguardando = doDia.filter((s) => s.estado === "aguardando");
 
   async function executar(acao) {
@@ -161,10 +86,10 @@ export default function PainelAtendente() {
 
     try {
       const textoSucesso = await acao();
-      await atualizarFila();
+      if (typeof atualizarFila === "function") await atualizarFila();
       setMensagem({ tipo: "ok", texto: textoSucesso });
     } catch (erro) {
-      await atualizarFila();
+      if (typeof atualizarFila === "function") await atualizarFila();
       setMensagem({
         tipo: "erro",
         texto: erro?.message || "Não foi possível concluir a operação.",
@@ -182,7 +107,8 @@ export default function PainelAtendente() {
       });
       return;
     }
-    executar(()=> callback(atual.numero));
+    const codigo =atual.codigo ?? atual.numero;
+    executar(()=> callback(codigo));
   }
 
   const acoes = {
@@ -249,7 +175,7 @@ export default function PainelAtendente() {
         <div className="atend_grade">
           <aside className="atend_lateral">
             <SenhaAtual senha={atual} acoes={acoes} carregando={processando} />
-            <FilaEspera senhas={aguardando} carregando={carregandoFila}/>
+            <FilaEspera senhas={aguardando} carregando={false}/>
           </aside>
 
           <FichaPaciente
