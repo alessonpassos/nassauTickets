@@ -1,8 +1,6 @@
-import { useState, useEffect} from "react";
-import { lerSessao, sair } from "../services/sessao";
+import { useState, useEffect, useCallback } from "react";
+import { lerSessao } from "../services/sessao";
 import * as fila from "../services/filaService";
-import useFila from "../hooks/useFila";
-import { horarioTotem } from "../utils/horario";
 import Cabecalho from "../components/Cabecalho";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Rodape from "../components/Rodape";
@@ -14,6 +12,15 @@ import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
 const CHAVE_GUICHE = "nassautickets_guiche_atual";
+const CHAVE_ATUAL = "nassautickets_senha_atual";
+
+function lerJson(chave) {
+  try {
+    return JSON.parse(sessionStorage.getItem(chave));
+  } catch {
+    return null;
+  }
+}
 
 function obterGuicheInicial() {
   const salvo = Number(sessionStorage.getItem(CHAVE_GUICHE));
@@ -22,14 +29,37 @@ function obterGuicheInicial() {
 
 export default function PainelAtendente() {
   const sessao = lerSessao();
-  const { senhas = [], carregandoFila = false, erroFila = null, atualizarFila } = useFila();
-
+  const [guiches, setGuiches] = useState([]);
   const [guiche, setGuiche] = useState(obterGuicheInicial());
+  const [aguardando, setAguardando] = useState([]);
+  const [atual, setAtualEstado] = useState(() => lerJson(CHAVE_ATUAL));
+  const [erroFila, setErroFila] = useState("");
   const [mensagem, setMensagem] = useState(null);
   const [processando, setProcessando] = useState(false);
 
-  const nomeAtendente = sessao?.nome || sessao?.usuario || "Atendente";
+  const nomeAtendente = sessao?.nome || "Atendente";
   const funcaoAtendente = sessao?.funcao || "Atendimento";
+
+  function setAtual(senha) {
+    setAtualEstado(senha);
+    if (senha) sessionStorage.setItem(CHAVE_ATUAL, JSON.stringify(senha));
+    else sessionStorage.removeItem(CHAVE_ATUAL);
+  }
+
+  const atualizarFila = useCallback(async () => {
+    try {
+      setAguardando(await fila.listarFila());
+      setErroFila("");
+    } catch (e) {
+      setErroFila(e.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    atualizarFila();
+    const t = setInterval(atualizarFila, 4000);
+    return () => clearInterval(t);
+  }, [atualizarFila]);
 
   useEffect(() => {
     let ativo = true;
@@ -75,21 +105,17 @@ export default function PainelAtendente() {
     return () => clearTimeout(timer);
   }, [mensagem]);
 
-  const atual =
-    doDia.find((s) => (s.guiche_id ?? s.guiche) === guiche && fila.ATIVOS.includes(s.estado)) ?? null;
-  const aguardando = doDia.filter((s) => s.estado === "aguardando");
-
   async function executar(acao) {
     if (processando) return;
     setProcessando(true);
     setMensagem(null);
 
     try {
-      const textoSucesso = await acao();
-      if (typeof atualizarFila === "function") await atualizarFila();
-      setMensagem({ tipo: "ok", texto: textoSucesso });
+      const texto = await acao();
+      await atualizarFila();
+      setMensagem({ tipo: "ok", texto });
     } catch (erro) {
-      if (typeof atualizarFila === "function") await atualizarFila();
+      await atualizarFila();
       setMensagem({
         tipo: "erro",
         texto: erro?.message || "Não foi possível concluir a operação.",
@@ -99,24 +125,41 @@ export default function PainelAtendente() {
     }
   }
 
-  function exigirSenhaAtual(callback) {
-    if (!atual.numero) {
-      setMensagem({
-        tipo: "erro",
-        texto: "Não há senha atual para esta ação."
-      });
+  function aplicar(resposta, encerrada = false) {
+    setAtual(encerrada ? null : { ...atual, ...resposta });
+  }
+
+  function comSenhaAtual(callback) {
+    if (!atual?.codigo) {
+      setMensagem({ tipo: "erro", texto: "Não há senha atual para esta ação." });
       return;
     }
-    const codigo =atual.codigo ?? atual.numero;
-    executar(()=> callback(codigo));
+    return executar(() => callback(atual.codigo));
   }
 
   const acoes = {
-    chamarProxima: () => executar(() => fila.chamarProxima({ guiche, atendente: nomeAtendente })),
-    chamarNovamente: () => exigirSenhaAtual((numero) => fila.chamarNovamente(numero)),
-    iniciar: () => exigirSenhaAtual((numero) => fila.iniciarAtendimento(numero)),
-    finalizar: () => exigirSenhaAtual((numero) => fila.finalizarAtendimento(numero)),
-    naoCompareceu: () => exigirSenhaAtual((numero) => fila.marcarNaoCompareceu(numero)),
+    chamarProxima: () => executar(async () => {
+      if (!guiche) throw new Error("Selecione um guichê.");
+      const s = await fila.chamarProxima(guiche);
+      setAtual(s);
+      return `Senha ${s.codigo} chamada.`;
+    }),
+    chamarNovamente: () => comSenhaAtual(async (codigo) => {
+      aplicar(await fila.chamarNovamente(guiche));
+      return `Última chamada para ${codigo}.`;
+    }),
+    iniciar: () => comSenhaAtual(async () => {
+      aplicar(await fila.iniciarAtendimento(atual.codigo));
+      return "Atendimento iniciado.";
+    }),
+    finalizar: () => comSenhaAtual(async () => {
+      aplicar(await fila.finalizarAtendimento(atual.codigo), true);
+      return "Atendimento finalizado.";
+    }),
+    naoCompareceu: () => comSenhaAtual(async (codigo) => {
+      aplicar(await fila.marcarNaoCompareceu(codigo), true);
+      return `Senha ${codigo} marcada como não compareceu.`;
+    }),
   };
 
   return (
@@ -140,11 +183,11 @@ export default function PainelAtendente() {
             <select
               id="guiche"
               className="campo_entrada"
-              value={guiche}
+              value={guiche ?? ""}
               disabled={processando}
               onChange={(e) => aoMudarGuiche(Number(e.target.value))}
             >
-              {GUICHES.map((g) => <option key={g} value={g}>Guichê {g}</option>)}
+              {GUICHES.map((g) => <option key={g.id} value={g.id}>Guichê {g.numero}</option>)}
             </select>
           </div>
         </CabecalhoPagina>
@@ -182,8 +225,11 @@ export default function PainelAtendente() {
             key={atual?.numero ?? "sem-senha"}
             senha={atual}
             carregando={processando}
-            aoSalvar={(r) =>
-              exigirSenhaAtual((numero) => fila.salvarRegistro(numero, r))} />
+            aoSalvar={() =>
+              setMensagem({
+                tipo: "ok",
+                texto: "Registro preenchido (ainda não persistido no servidor)."
+              })} />
         </div>
       </main>
 
