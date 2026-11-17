@@ -1,91 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Navigate, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FormularioLogin from "../components/FormularioLogin";
 import Logo from "../components/Logo";
-import { entrar, obterRotaInicial, obterSessao, sair} from "../services/sessao";
+import { entrar, lerSessao, obterRotaInicial} from "../services/sessao";
 import "../styles/login.css";
 
 const NOME_APP = "NassauTickets";
 const ID_ERRO_LOGIN = "login-mensagem-erro";
-
-const CHAVE_SESSAO = "nassautickets_sessao";
-const API_URL = import.meta.env.VITE_API_URL;
-
-const ROTA_POR_PERFIL = {
-  gestor: "/gestor",
-  atendente: "/atendente"
-};
-
-export function obterRotaInicial(perfil) {
-  return ROTA_POR_PERFIL[perfil] || "/atendente";
-}
-
-export async function entrar(usuario, senha) {
-  const resposta = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ usuario, senha }),
-  });
-
-  if (!resposta.ok) {
-    if (resposta.status === 401 || resposta.status === 403) {
-      throw new Error("Usuário ou senha incorretos.");
-    }
-    throw new Error("Erro ao conectar com o servidor. Tente novamente.");
-  }
-
-  const dados = await resposta.json();
-
-  const sessaoSegura = {
-    token: dados.token,
-    usuario: dados.usuario,
-    perfil: dados.perfil,
-  };
-
-  localStorage.setItem(CHAVE_SESSAO, JSON.stringify(sessaoSegura));
-  return sessaoSegura;
-}
-
-export function obterSessao() {
-  try {
-    const salvo = localStorage.getItem(CHAVE_SESSAO);
-    return salvo ? JSON.parse(salvo) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function sair() {
-  localStorage.removeItem(CHAVE_SESSAO);
-  if (window.location.pathname !== "/login") {
-    window.location.replace("/login");
-  }
-}
-
-export async function requisicaoAutenticada(endpoint, opcoes = {}) {
-  const sessao = obterSessao();
-
-  const headers = {
-    "Content-Type": "application/json",
-    ...opcoes.headers,
-  };
-
-  if (sessao?.token) {
-    headers.Authorization = `Bearer ${sessao.token}`;
-  }
-
-  const resposta = await fetch(`${API_URL}${endpoint}`, {
-    ...opcoes,
-    headers,
-  });
-
-  if (resposta.status === 401 || resposta.status === 403) {
-    sair();
-    throw new Error("Sessão expirada ou sem permissão de acesso.");
-  }
-
-  return resposta;
-}
 
 function Marca({ classeContainer, classeIcone, classeNome }) {
   return (
@@ -104,8 +25,8 @@ export default function Login() {
   const anoAtual = new Date().getFullYear();
 
   useEffect(() => {
-    const sessaoExistente = obterSessao();
-    if (sessaoExistente?.token) {
+    const sessaoExistente = lerSessao();
+    if (sessaoExistente) {
       navegar(obterRotaInicial(sessaoExistente.perfil), { replace: true });
     }
   }, [navegar]);
@@ -115,15 +36,24 @@ export default function Login() {
       setMensagemErro("");
     }
   }
+
   async function aoEntrar(usuario, senha) {
     limparErro();
     setCarregando(true);
 
     try {
       const sessao = await entrar(usuario, senha);
+      if (!sessao?.token) {
+        sair();
+        setMensagemErro("Usuário ou senha inválidos.");
+        return;
+      }
       navegar(obterRotaInicial(sessao.perfil), { replace: true });
     } catch (erro) {
-      setMensagemErro(erro.message || "Falha ao realizar login.");
+      if (erro?.status === 401 || erro?.status === 403) {
+        sair();
+    }
+    setMensagemErro(erro?.mensagem || "Falha ao realizar login.");
     } finally {
       setCarregando(false);
     }
