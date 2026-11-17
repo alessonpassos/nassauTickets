@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { TIPOS_SENHA } from "../data/totem";
-import { emitirSenhaLocal } from "../services/totemService";
+import { api, traduzirSenha } from "../services/api";
 import IconeTotem from "./IconeTotem";
 
 export default function FormularioTotem({ aberto, aoEmitir }) {
@@ -14,7 +14,7 @@ export default function FormularioTotem({ aberto, aoEmitir }) {
     setEnviando(tipo);
     setErro("");
     try {
-      aoEmitir(await emitirSenhaLocal({ tipo }));
+      aoEmitir(traduzirSenha(await api.post("/senhas", { tipo }, { autenticado: false })));
     } catch (falha) {
       setErro(falha.message);
     } finally {

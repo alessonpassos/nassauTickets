@@ -9,7 +9,7 @@ export default function TotemApp() {
       <Routes>
         <Route path="/" element={<Totem />} />
         <Route path="/totem" element={<Totem />} />
-        <Route path="/totem/retirar" element={<Totem retirar />} />
+        <Route path="/totem/retirar" element={<Totem />} />
         <Route path="*" element={<PaginaIndisponivel />} />
       </Routes>
     </BrowserRouter>
