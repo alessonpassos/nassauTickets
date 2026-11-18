@@ -1,20 +1,22 @@
 import { useRef, useState } from "react";
 import { TIPOS_SENHA } from "../data/totem";
-import { emitirSenhaLocal } from "../services/totemService";
+import { api, traduzirSenha } from "../services/api";
 import IconeTotem from "./IconeTotem";
 
 export default function FormularioTotem({ aberto, aoEmitir }) {
   const [enviando, setEnviando] = useState("");
   const [erro, setErro] = useState("");
+  const [ultimoTipo, setUltimoTipo] = useState("");
   const envioEmCurso = useRef(false);
 
   async function emitir(tipo) {
     if (envioEmCurso.current || !aberto) return;
     envioEmCurso.current = true;
     setEnviando(tipo);
+    setUltimoTipo(tipo);
     setErro("");
     try {
-      aoEmitir(await emitirSenhaLocal({ tipo }));
+      aoEmitir(traduzirSenha(await api.post("/senhas", { tipo }, { autenticado: false })));
     } catch (falha) {
       setErro(falha.message);
     } finally {
@@ -52,13 +54,14 @@ export default function FormularioTotem({ aberto, aoEmitir }) {
       </div>
       {!aberto && (
         <p className="totem-aviso" role="status">
-          Emissão encerrada. Atendimento das 7h às 17h.
+          Emissão disponível das 7h às 17h, no horário de Brasília.
         </p>
       )}
       {erro && (
-        <p className="totem-erro" role="alert">
-          {erro}
-        </p>
+        <div className="totem-erro" role="alert">
+          <p>{erro}</p>
+          <button type="button" className="botao botao--secundario" disabled={!aberto || !!enviando} onClick={() => emitir(ultimoTipo)}>Tentar novamente</button>
+        </div>
       )}
     </section>
   );

@@ -1,83 +1,79 @@
-# NassauTickets — Totem
+# nassauTickets — Frontend
 
-Extensão do frontend React fornecido, com uma nova aba de autoatendimento. Mantém os componentes de cabeçalho e rodapé, a fonte Public Sans, a paleta ciano, os tokens de CSS e as telas existentes.
+Interface React do sistema de controle de atendimento por senhas. Consome a API do backend (`../backend`). Visão geral do projeto, regras e API no [README da raiz](../README.md) e em [`../docs`](../docs/Indice.md).
 
 ## Executar
 
-Requer uma versão de Node compatível com o Vite 8 já utilizado pelo projeto (Node 22.12+).
+Requer Node.js 22.12 ou superior (Vite 8) e o backend rodando.
 
 ```sh
-npm ci
-npm run dev -- --host 0.0.0.0
+cp .env.example .env     # VITE_API_URL=http://localhost:3000/api
+npm install
+npm run dev              # http://localhost:5173
 ```
 
 ```sh
-npm run build
-npm run preview -- --host 0.0.0.0
+npm run build            # build de produção
+npm run preview
+npm run lint
 ```
 
-Esta pasta corresponde a `frontend/` no repositório acadêmico. Não inclui backend, banco de dados ou autenticação de atendentes.
+Para abrir o totem em outro dispositivo da rede (QR Code), use `npm run dev -- --host 0.0.0.0` e inclua a origem do front em `CORS_ORIGIN` no `.env` do backend.
+
+## Variáveis de ambiente
+
+| Variável | Descrição |
+| :------- | :-------- |
+| `VITE_API_URL` | URL-base da API (padrão `http://localhost:3000/api`) |
 
 ## Rotas
 
-- `/totem`: exibe QR Code a partir de 768px; em telas menores, exibe o formulário.
-- `/totem/retirar?totem=recepcao-01`: abre o formulário em qualquer tamanho de tela; é o destino do QR Code.
-- `/atendente`, `/relatorios` e `/painel-de-senha`: telas originais preservadas.
-- `/`: abre `/totem` como entrada desta demonstração. Para manter a entrada anterior, altere apenas o redirecionamento em `src/App.jsx` para `/atendente`.
+| Rota | Acesso | Descrição |
+| :--- | :----- | :-------- |
+| `/` | Público | Entrada com atalhos |
+| `/totem` | Público | Emissão de senha (também `/totem/retirar?totem=recepcao-01`) |
+| `/painel-de-senha` | Público | Painel com as 5 últimas chamadas, som e narração |
+| `/login` | Público | Login na API |
+| `/atendente` | Atendente e gestor | Chamar, repetir, iniciar, finalizar e não compareceu |
+| `/relatorios` | Gestor | Relatórios diário, mensal, detalhado e auditoria |
 
-O link do QR Code utiliza a origem atual, sem dados pessoais. Em desenvolvimento, abra o site pelo IP acessível na rede local: `localhost` no QR Code aponta para o próprio celular. No site publicado, o endereço é gerado automaticamente. A prévia do Sites é privada; para abri-la em outro dispositivo, utilize a mesma conta autorizada. O Totem em si não implementa login.
+O totem abre em janela própria (`services/janelaTotem.js`), sem os menus de funcionário.
 
-## Fluxo
+## Organização
 
-1. Abra a aba Totem em uma tela de computador.
-2. Leia o QR Code no celular ou escolha “Abrir neste dispositivo”.
-3. Informe um nome e selecione SG, SP ou SE.
-4. Gere e copie a senha. O comprovante permanece disponível após atualizar a página no mesmo navegador durante o expediente.
-5. Use “Emitir outra senha” para começar uma nova solicitação, mantendo os contadores.
+```
+src/
+├── components/   # blocos reutilizáveis e RotaProtegida
+├── data/         # configuração do totem e tipos de senha
+├── hooks/
+├── pages/        # telas
+├── services/     # api.js (fetch), sessao.js, relatorioService.js, janelaTotem.js
+├── styles/
+└── utils/        # horário, formatação, áudio
+```
 
-Os PDFs não fornecem campos obrigatórios do cadastro do cliente nem um contrato HTTP de emissão. Por isso, este recorte solicita somente o nome de exibição e o tipo de atendimento. CPF, data de nascimento, informações clínicas e cadastro completo ficam fora do Totem. O nome é validado em memória e não é persistido. O totem demonstrativo é identificado como `recepcao-01`; seus dados estão centralizados em `src/data/totem.js`.
+- `services/api.js`: único ponto de `fetch`. Envia o token, trata 401 (limpa a sessão e volta ao login) e converte campos (`codigo→numero`, `status→estado`, `emitida_em→emitidaEm`).
+- `services/sessao.js`: sessão no `sessionStorage` (token, nome, perfil). A senha nunca é guardada.
 
-## Regras implementadas
+## Totem
 
-- SG: atendimento geral; SP: atendimento prioritário; SE: retirada de exames.
-- Código `YYMMDD-PPSQ`, por exemplo `260925-SP001`.
-- Contadores independentes por tipo, de 001 a 999, com reinício diário.
-- Datas e expediente de 7h até antes das 17h no fuso `America/Sao_Paulo`.
-- Bloqueio da emissão fora do expediente, inclusive no momento do envio.
-- Senhas de dias anteriores ou fora do expediente não são restauradas como válidas.
-- Validação do formulário, estado de envio, erros de armazenamento, erro de QR Code com nova tentativa, link de totem inválido e comprovante de sucesso.
-- Bloqueio de envio repetido no formulário e Web Locks, quando disponível, para serializar a emissão entre abas do mesmo navegador.
-- QR Code gerado localmente pela biblioteca `qrcode`; não envia seu conteúdo a serviços de terceiros.
-- Campos com rótulos, navegação por teclado, mensagens acessíveis e apresentação responsiva.
+- Tipos: SG (geral), SP (prioritário) e SE (retirada de exames).
+- O front envia só `{tipo}`; o **servidor** gera o número `YYMMDD-PPSQ` (ex.: `261117-SP003`), com sequência diária por tipo.
+- O totem é anônimo: não coleta nem grava dados pessoais.
+- Após emitir, mostra o comprovante com barra de progresso (impressão simulada) e volta à seleção; o botão **Nova senha** volta antes.
+- Bloqueio de envio repetido; acessível por teclado, com rótulos e mensagens para leitores de tela.
 
-## Dados locais e limites
+## Dados no navegador
 
-A chave `nassautickets:totem:demo:v1` no `localStorage` armazena apenas a data, os contadores SG/SP/SE e o último comprovante, sem nome ou documentos. Não há uma fila real. Cada navegador possui sua própria numeração; senhas podem repetir entre dispositivos. A interface informa explicitamente que é uma demonstração. A implementação não deve ser usada para atendimento real antes da integração.
+Apenas `sessionStorage`: sessão do usuário, guichê escolhido, senha em atendimento e o modo "janela de totem". Não há fila nem numeração no navegador.
 
-O serviço `src/services/totemService.js` concentra a emissão e a recuperação local. Na AV2, substitua o adaptador de emissão por uma requisição `fetch` ao backend acordado. O contrato lógico esperado deve devolver número, tipo, identificador do totem, data/hora e estado da senha. **Não há endpoint real configurado ou contrato HTTP presumido.**
+## Limitações e pendências
 
-O backend deverá assumir a numeração global, horário oficial, idempotência, fila, prioridade, concorrência, estados e descarte de senhas no encerramento do expediente. A interface não antecipa próxima senha, posição ou estimativa de espera.
+- A tela `/atendente` está em migração para a API (ver [`../docs/pendencias.md`](../docs/pendencias.md), item 1).
+- `src/data/totem.js` ainda está com expediente 0–24 h; o correto é 7–17.
+- Restos da AV1 a remover: `data/usuarios.js`, `services/filaService.js`, `hooks/useFila.js`.
+- Ainda não há botão "Tentar novamente" nem dados locais de contingência; quando a API cai, as telas mostram a mensagem de erro.
 
-As outras telas mantêm as limitações do arquivo original: o painel de atendimento possui dados demonstrativos e o painel de chamadas consulta `http://localhost:3000/api/senhas/atual`. A emissão do Totem não foi conectada artificialmente a essas telas.
+## Uso de IA
 
-## Organização da alteração
-
-- `src/pages/Totem.jsx`: visão responsiva e coordenação do fluxo.
-- `src/components/QrCodeTotem.jsx`: QR Code e acesso alternativo.
-- `src/components/FormularioTotem.jsx`: dados controlados, validação e envio.
-- `src/components/ComprovanteTotem.jsx`: resultado, cópia e nova solicitação.
-- `src/components/IconeTotem.jsx`: ícones da nova interface.
-- `src/hooks/useFormatoTotem.js`: detecção reativa da largura da tela.
-- `src/data/totem.js`: informações do totem e tipos de atendimento.
-- `src/services/totemService.js`: regras e persistência local.
-- `src/styles/totem.css`: estilos da nova tela, usando os tokens existentes.
-
-Alterações pontuais em `App.jsx`, `Cabecalho.jsx`, `layout.css`, `index.html`, `package.json` e `package-lock.json` integram a nova aba. A estrutura de rotas existente foi mantida.
-
-## Verificação
-
-Verificadas as regras de horário e data de Brasília, validação, sequência por tipo, reinício diário, recuperação do comprovante, ausência do nome na persistência e erros de armazenamento. O frontend também deve passar pelo build de produção. A verificação visual em navegador não pôde ser realizada neste ambiente por indisponibilidade da prévia supervisionada.
-
-## Autoria e entrega acadêmica
-
-Esta extensão foi desenvolvida com auxílio de IA. A equipe deve revisar, compreender, testar e registrar a utilização conforme as orientações da disciplina. Os nomes, matrículas, papéis, branches e evidências do trabalho em grupo não foram inventados; devem ser preenchidos no repositório principal pela equipe.
+A extensão do Totem foi desenvolvida com auxílio de IA. O registro de uso de IA da equipe está em [`../docs/equipe.md`](../docs/equipe.md).

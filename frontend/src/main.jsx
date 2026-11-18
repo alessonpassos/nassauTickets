@@ -1,5 +1,6 @@
 import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { prepararJanelaTotem } from "./services/janelaTotem";
 
 // A janela carrega somente a interface correspondente ao seu modo.
@@ -10,8 +11,10 @@ import "./styles/global.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Suspense fallback={<p role="status">Carregando…</p>}>
-      <App />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<p role="status">Carregando…</p>}>
+        <App />
+      </Suspense>
+    </ErrorBoundary>
   </StrictMode>
 );

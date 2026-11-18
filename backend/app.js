@@ -1,41 +1,51 @@
-var createError = require("http-errors");
-var express = require("express");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
-var cors = require("cors");
+require("dotenv").config();
+const createError = require("http-errors");
+const express = require("express");
+const logger = require("morgan");
+const cors = require("cors");
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-var senhasRouter = require("./routes/senhas");
-var guichesRouter = require("./routes/guiches");
+const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth");
+const senhasRouter = require("./routes/senhas");
+const registrosRouter = require("./routes/registros");
+const guichesRouter = require("./routes/guiches");
+const relatoriosRouter = require("./routes/relatorios");
 
-var app = express();
+const app = express();
+  
+const origensPermitidas = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
-/*
-Feedback do tester Luiz
-Sistema seguindo como esperado, sem bugs aparentes até o momento.
-Mas esperando conectividade com banco de dados para testar
-o armazenamento de histórico. E se todos os processos estão funcionando
-como esperado.
-*/
-
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: origensPermitidas }));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
 app.use("/api", indexRouter);
-app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/senhas", senhasRouter);
+app.use("/api/senhas", registrosRouter);
 app.use("/api/guiches", guichesRouter);
+app.use("/api/relatorios", relatoriosRouter);
 
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-app.use(function (err, req, res, next) {
-  res.status(err.status || 500).json({ erro: err.message });
+app.use((err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res
+      .status(400)
+      .json({ erro: "JSON inválido no corpo da requisição." });
+  }
+  const status = err.status || err.statusCode || 500;
+  if (status >= 500) {
+    console.error(err);
+    return res.status(status).json({ erro: "Erro interno do servidor." });
+  }
+  res.status(status).json({ erro: err.message });
 });
 
 module.exports = app;

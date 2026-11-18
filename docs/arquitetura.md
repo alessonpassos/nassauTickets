@@ -7,40 +7,44 @@ Usuário (totem / painel / guichê / gestor)
           │
           ▼
    Front-end React (frontend/)
-          │
-          │  localStorage / sessionStorage (AV1)
+          │   fetch + JSON  (Authorization: Bearer <JWT> nas rotas protegidas)
           ▼
   API REST Express (backend/)
-          │
+          │   mysql2 (pool, transações)
           ▼
       MySQL 8.0
 ```
 
-## Estrutura real do projeto
+O front-end não guarda regra de negócio nem fila: ele consome a API. A numeração, a prioridade, as transições de estado e a autorização ficam no servidor.
+
+## Estrutura do projeto
 
 ```text
-nassauTickets-dev/
+nassauTickets/
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── data/
+│   │   ├── components/   # blocos reutilizáveis e RotaProtegida
+│   │   ├── data/         # configuração do totem e tipos de senha
 │   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── services/
+│   │   ├── pages/        # Inicio, Login, Totem, PainelSenhas, PainelAtendente, Relatorios
+│   │   ├── services/     # api.js (fetch), sessao.js, relatorioService.js, janelaTotem.js
 │   │   ├── styles/
-│   │   └── utils/
-│   ├── package.json
-│   ├── vite.config.js
-│   └── index.html
-├── backend/
-│   ├── routes/
-│   ├── config/
-│   ├── public/
-│   ├── views/
-│   ├── app.js
+│   │   └── utils/        # horário, formatação, áudio
+│   ├── .env.example      # VITE_API_URL
 │   └── package.json
+├── backend/
+│   ├── bin/www           # sobe o servidor
+│   ├── config/           # database.js (pool MySQL)
+│   ├── middleware/       # auth.js (verificarToken, exigirPerfil)
+│   ├── routes/           # index (health), auth, guiches, senhas, relatorios
+│   ├── scripts/          # criar_usuario.js
+│   ├── utils/            # http.js (ErroHttp), transacao.js
+│   ├── app.js
+│   ├── requests.http     # requisições de teste manual
+│   └── .env.example
 ├── docs/
+│   ├── branding/  mer/  mockups/  models/uml/  requirements/
+│   └── *.md
 └── README.md
 ```
 
@@ -48,50 +52,52 @@ nassauTickets-dev/
 
 | Camada | Responsabilidade |
 | ------ | ---------------- |
-| `pages/` | telas de início, login, totem, atendimento, painel, relatórios |
-| `components/` | blocos reutilizáveis e roteamento protegido |
-| `services/` | lógica de fila, sessão, relatórios, totem e adaptação local |
-| `hooks/` | sincronização e leitura da fila compartilhada |
-| `styles/` | CSS por tela e layout |
-| `utils/` | horário, formatação, audio |
+| `pages/` | Telas: início, login, totem, painel de senhas, atendente, relatórios |
+| `components/` | Blocos reutilizáveis e `RotaProtegida` (bloqueia por perfil) |
+| `services/api.js` | Único ponto de `fetch`: URL-base, token, tratamento de 401, `ErroApi`, `traduzirSenha` |
+| `services/sessao.js` | Sessão no `sessionStorage` (token, nome, perfil — nunca a senha) |
+| `services/relatorioService.js` | Chamadas e normalização dos relatórios |
+| `utils/` | Horário de Brasília, formatação, áudio do painel |
 
 ## Camadas do back-end
 
 | Camada | Responsabilidade |
 | ------ | ---------------- |
-| `routes/` | `health`, `guiches`, `senhas` |
-| `config/database.js` | conexão com MySQL via pool |
-| `app.js` | inicialização do Express e middleware |
-| `views/` | páginas padrão do exemplo Express |
+| `routes/` | `index` (health), `auth`, `guiches`, `senhas`, `relatorios` |
+| `middleware/auth.js` | Valida o JWT (401) e confere o perfil (403) |
+| `utils/transacao.js` | Transação MySQL com trava opcional (`GET_LOCK`) |
+| `utils/http.js` | `ErroHttp` e `asyncHandler` |
+| `config/database.js` | Pool de conexões MySQL |
+| `app.js` | Express, CORS por variável de ambiente, rotas e tratamento de erros |
 
-## Fluxo principal
+## Fluxos principais
+
+**Atendimento**
 
 ```text
-Cliente acessa o Totem
-    ↓
-Emite senha (SP/SE/SG)
-    ↓
-Dados ficam em localStorage (AV1)
-    ↓
-Atendente entra localmente
-    ↓
-Chama a próxima senha e controla o guichê
-    ↓
-Painel mostra as 5 últimas chamads
-    ↓
-Relatórios exibem indicadores do dia/mês
+Cliente no Totem → POST /senhas {tipo} → servidor gera YYMMDD-PPSQ (AGUARDANDO)
+Atendente (login) → POST /senhas/chamar {guiche_id} → CHAMADA
+Painel (GET /senhas/atual a cada 4 s) mostra a chamada, com som e narração
+Atendente → repetir (CHAMADA_NOVAMENTE) → iniciar (EM_ATENDIMENTO) → finalizar (ATENDIDA)
+                                          └→ nao-compareceu (após a 2ª chamada)
+Gestor (login) → /relatorios/* → diário, mensal, detalhado e auditoria
 ```
 
-## Integração real
+**Login e autorização**
 
-- O front-end atual usa `localStorage` e `sessionStorage` para simular a aplicação sem integração com a API.
-- O back-end atual consulta MySQL real para guichês e senhas, mas não há autenticação ni backend nem script SQL versionado.
-- O padrão de arquitetura para AV2 é manter o front-end em React e trocar a camada de dados por integração REST ao back-end Node.js/Express.
+```text
+POST /auth/login → bcrypt.compare → JWT (sub, nome, perfil)
+Front guarda o token no sessionStorage → api.js envia Authorization: Bearer
+Rota protegida → verificarToken (401) → exigirPerfil (403)
+401 no front → sessão limpa e redirecionamento para /login
+```
+
+## Concorrência
+
+Emissão e chamada rodam em transação, com `GET_LOCK` por operação (`nassautickets:emitir` e `nassautickets:chamar`). A escolha da senha usa `SELECT … FOR UPDATE`, e a atualização do estado confere o estado anterior. Assim, dois guichês não pegam a mesma senha e dois pedidos não geram o mesmo código (há ainda uma chave única `data_emissao + tipo + sequencial` no banco).
 
 ## Status da arquitetura
 
-- Implementado: front-end UI local e modelo de fluxo de atendimento
-- Implementado no back-end: health check, guichês e rotas de senhas
-- Parcial: autenticação, usuários e persistência completa
-- Planejado: autenticação real do gestor/atendente e integração completa com MySQL em produção
-
+- Implementado: API com autenticação JWT, perfis, emissão, chamada, repetição, transições de estado, painel e relatórios; script SQL; front consumindo a API no totem, painel, login e relatórios.
+- Em andamento: migração da tela `/atendente` para a API.
+- Pendente: verificação de expediente no servidor, descarte às 17h, `helmet` e limite de tentativas de login, testes automatizados. Ver [pendencias.md](pendencias.md).

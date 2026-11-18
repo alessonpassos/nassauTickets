@@ -1,64 +1,113 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormularioLogin from "../components/FormularioLogin";
 import Logo from "../components/Logo";
-import { entrar } from "../services/sessao";
+import { lerSessao, entrar, sair, obterRotaInicial} from "../services/sessao";
 import "../styles/login.css";
 
-const anoAtual = new Date().getFullYear();
+const NOME_APP = "NassauTickets";
+const ID_ERRO_LOGIN = "login-mensagem-erro";
+
+function Marca({ classeContainer, classeIcone, classeNome }) {
+  return (
+    <div className={classeContainer}>
+      <Logo className={classeIcone} />
+      <span className={classeNome}>{NOME_APP}</span>
+    </div>
+  );
+}
 
 export default function Login() {
   const navegar = useNavigate();
-  const [erro, setErro] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  function aoEntrar(usuario, senha) {
-    const sessao = entrar(usuario, senha);
-    if (!sessao) return setErro(true);
-    navegar(sessao.perfil === "gestor" ? "/relatorios" : "/atendente", { replace: true });
+  const anoAtual = new Date().getFullYear();
+
+  useEffect(() => {
+    const sessaoExistente = lerSessao();
+    if (sessaoExistente) {
+      navegar(obterRotaInicial(sessaoExistente.perfil), { replace: true });
+    }
+  }, [navegar]);
+
+  function limparErro() {
+    if (mensagemErro){
+      setMensagemErro("");
+    }
+  }
+
+  async function aoEntrar(usuario, senha) {
+    limparErro();
+    setCarregando(true);
+
+    try {
+      const { perfil } = await entrar(usuario, senha);
+      navegar(obterRotaInicial(perfil), { replace: true });
+    } catch (erro) {
+      sair();
+      setMensagemErro(
+        erro?.status === 401
+          ? "Usuário ou senha inválidos."
+          : erro?.message || "Falha ao realizar login.",
+      );
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
     <div className="login">
-      <aside className="login_marca">
-        <div className="login_marca-topo">
-          <Logo className="login_marca-icone" />
-          <span className="login_marca-nome">NassauTickets</span>
-        </div>
+      <aside className="login_marca" aria-label="Apresentação do sistema">
+        <Marca
+          classeContainer="login_marca-topo"
+          classeIcone="login_marca-icone"
+          classeNome="login_marca-nome"
+        />
 
         <p className="login_marca-frase">
           Organize a fila de atendimento do posto em um só lugar.
         </p>
 
-        <p className="login_marca-rodape">
-          © {anoAtual} NassauTickets. Projeto acadêmico — controle de atendimento.
-        </p>
+        <footer className="login_marca-rodape">
+          © {anoAtual} {NOME_APP}. Projeto acadêmico — controle de atendimento.
+        </footer>
       </aside>
 
       <main className="login_conteudo">
         <div className="login_cartao">
-          <div className="login_marca-mobile">
-            <Logo className="marca_icone" />
-            <span className="marca_nome">NassauTickets</span>
-          </div>
+          <Marca
+            classeContainer="login_marca-mobile"
+            classeIcone="marca_icone"
+            classeNome="marca_nome"
+          />
 
-          <div className="login_cabecalho">
+          <header className="login_cabecalho">
             <h1 className="login_titulo">Entrar</h1>
             <p className="login_subtitulo">
               Acesse com o usuário do seu setor para começar o atendimento.
             </p>
-          </div>
+          </header>
 
-          {erro && (
-            <p className="login_erro" role="alert">
-              Usuário ou senha incorretos.
+          {mensagemErro && (
+            <p id={ID_ERRO_LOGIN} className="login_erro" role="alert">
+              {mensagemErro}
             </p>
           )}
 
-          <FormularioLogin aoEntrar={aoEntrar} />
+          <FormularioLogin
+            aoEntrar={aoEntrar}
+            aoDigitar={limparErro}
+            carregando={carregando}
+            temErro={Boolean(mensagemErro)}
+            idErro={mensagemErro ? ID_ERRO_LOGIN : undefined}
+          />
 
-          <p className="login_rodape">
-            Demonstração — atendente / atendente123 · gestor / gestor123
-          </p>
+          {import.meta.env.DEV && (
+            <p className="login_rodape">
+              Ambiente de desenvolvimento — utilize credenciais cadastradas na API.
+            </p>
+          )}
         </div>
       </main>
     </div>

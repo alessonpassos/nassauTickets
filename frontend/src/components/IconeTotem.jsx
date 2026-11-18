@@ -1,10 +1,4 @@
 const desenhos = {
-  celular: (
-    <>
-      <rect x="6" y="2" width="12" height="20" rx="3" />
-      <path d="M10 5h4M11 19h2" />
-    </>
-  ),
   seta: (
     <>
       <path d="M5 12h14m-5-5 5 5-5 5" />
@@ -56,12 +50,6 @@ const desenhos = {
     </>
   ),
   check: <path d="m5 12 4 4L19 6" />,
-  copiar: (
-    <>
-      <rect x="8" y="8" width="12" height="13" rx="2" />
-      <path d="M16 8V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4" />
-    </>
-  ),
   senha: (
     <>
       <path d="M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4ZM15 6v2m0 3v2m0 3v2" />

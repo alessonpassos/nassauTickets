@@ -7,11 +7,12 @@ const TEXTO_ESTADO = {
   EM_ATENDIMENTO: "Em atendimento",
 };
 
-export default function SenhaAtual({ senha, acoes }) {
-  const espera = senha
-    ? Math.max(0, Math.round((Date.parse(senha.chamadas[0]) - Date.parse(senha.emitidaEm)) / 60000))
-    : 0;
-  const estado = senha?.estado;
+export default function SenhaAtual({ senha, acoes, carregando = false }) {
+  const diferenca = senha
+    ? Date.parse(senha.primeira_chamada_em) - Date.parse(senha.emitida_em)
+    : NaN;
+  const espera = Number.isFinite(diferenca) ? Math.max(0, Math.round(diferenca / 60000)) : null;
+  const estado = senha?.status;
 
   return (
     <section className="senha-atual" aria-labelledby="senha-atual-titulo">
@@ -24,26 +25,26 @@ export default function SenhaAtual({ senha, acoes }) {
             {ROTULO_TIPO[senha.tipo]}
             {senha.tipo === "SP" && <span className="selo selo--prioridade">Prioritário</span>}
           </p>
-          <p className="senha-atual_espera">{TEXTO_ESTADO[estado]} · aguardou {espera} min</p>
+          <p className="senha-atual_espera">{TEXTO_ESTADO[estado]}{espera === null ? "" : ` · aguardou ${espera} min`}</p>
         </>
       ) : (
         <p className="senha-atual_espera">Nenhuma senha em atendimento neste guichê.</p>
       )}
 
       <div className="senha-atual_acoes">
-        <button type="button" className="botao botao--claro" onClick={acoes.chamarProxima} disabled={!!senha}>
+        <button type="button" className="botao botao--claro" onClick={acoes.chamarProxima} disabled={carregando || !!senha}>
           Chamar próxima senha
         </button>
-        <button type="button" className="botao botao--contorno-claro" onClick={acoes.chamarNovamente} disabled={estado !== "CHAMADA"}>
+        <button type="button" className="botao botao--contorno-claro" onClick={acoes.chamarNovamente} disabled={carregando || estado !== "CHAMADA"}>
           Chamar de novo
         </button>
-        <button type="button" className="botao botao--contorno-claro" onClick={acoes.iniciar} disabled={!["CHAMADA", "CHAMADA_NOVAMENTE"].includes(estado)}>
+        <button type="button" className="botao botao--contorno-claro" onClick={acoes.iniciar} disabled={carregando || !["CHAMADA", "CHAMADA_NOVAMENTE"].includes(estado)}>
           Iniciar atendimento
         </button>
-        <button type="button" className="botao botao--contorno-claro" onClick={acoes.finalizar} disabled={estado !== "EM_ATENDIMENTO"}>
+        <button type="button" className="botao botao--contorno-claro" onClick={acoes.finalizar} disabled={carregando || estado !== "EM_ATENDIMENTO"}>
           Finalizar atendimento
         </button>
-        <button type="button" className="botao botao--contorno-claro" onClick={acoes.naoCompareceu} disabled={estado !== "CHAMADA_NOVAMENTE"}>
+        <button type="button" className="botao botao--contorno-claro" onClick={acoes.naoCompareceu} disabled={carregando || estado !== "CHAMADA_NOVAMENTE"}>
           Não compareceu
         </button>
       </div>

@@ -31,7 +31,7 @@
 }
 .totem-principal {
   width: 100%;
-  max-width: 980px;
+  max-width: 580px;
   margin: auto 0;
   padding: 2rem 0;
 }
@@ -45,17 +45,10 @@
 }
 .totem-superficie {
   width: 100%;
-  max-width: 520px;
   margin: 0 auto;
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-painel);
   background: white;
-}
-.totem-superficie--dupla {
-  max-width: none;
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  align-items: center;
 }
 .totem-superficie h2 {
   font-size: 1.125rem;
@@ -67,32 +60,6 @@
 .totem-atendimento {
   padding: 2.25rem;
   min-width: 0;
-}
-.totem-qr {
-  border-right: 1px solid var(--cor-borda);
-  text-align: center;
-  padding: 1.5rem;
-}
-.totem-qr_codigo {
-  width: min(100%, 244px);
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  margin: 0.75rem auto 0.35rem;
-}
-.totem-qr_codigo img {
-  display: block;
-  width: 100%;
-  height: auto;
-  image-rendering: pixelated;
-}
-.totem-qr p {
-  font-size: 0.875rem;
-  color: var(--cor-tinta-suave);
-  margin: 0;
-}
-.totem-qr_codigo p {
-  margin: 0 0 0.6rem;
 }
 .totem-emissao > p {
   color: var(--cor-tinta-suave);
@@ -173,27 +140,47 @@
   font-size: 0.8125rem;
   color: var(--cor-tinta-suave);
 }
-.totem-comprovante_instrucao {
-  color: var(--cor-tinta-suave);
-  font-size: 0.875rem;
-  margin: 1rem 0;
-}
 .totem-comprovante_acoes {
+  margin: 1.35rem 0 0;
+}
+.totem-impressao {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #b4dbc3;
+  border-radius: var(--raio-campo);
+  background: #f0faf3;
+  color: #205c35;
+  font-size: 0.875rem;
+}
+.totem-impressao_status {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-.totem-comprovante_acoes .botao {
+  align-items: center;
   gap: 0.5rem;
 }
-.totem-feedback {
-  margin: 0.6rem 0 0;
-  color: var(--cor-tinta-suave);
-  font-size: 0.875rem;
+.totem-impressao_status p {
+  margin: 0.25rem 0 0;
 }
-.totem-feedback:empty {
-  display: none;
+.totem-impressao_progresso {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+.totem-impressao_barra {
+  flex: 1;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #cce6d3;
+}
+.totem-impressao_barra > div {
+  height: 100%;
+  background: #278046;
+  transform: scaleX(var(--progresso));
+  transform-origin: left;
+  transition: transform 100ms linear;
 }
 .totem-rodape {
   text-align: center;
@@ -224,12 +211,6 @@
 @media (max-width: 900px) {
   .totem-atendimento {
     padding: 1.5rem;
-  }
-  .totem-superficie--dupla {
-    grid-template-columns: 0.85fr 1.15fr;
-  }
-  .totem-qr {
-    padding: 1.25rem;
   }
   .totem-botao-senha {
     padding: 0.9rem;
@@ -274,7 +255,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .totem-botao-senha {
+  .totem-botao-senha,
+  .totem-impressao_barra > div {
     transition: none;
   }
 }

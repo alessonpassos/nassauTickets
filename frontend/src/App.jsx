@@ -15,7 +15,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route
           path="/atendente"
-          element={<RotaProtegida perfis={["atendente", "gestor"]}><PainelAtendente /></RotaProtegida>}
+          element={<RotaProtegida perfis={["atendente"]}><PainelAtendente /></RotaProtegida>}
         />
         <Route path="/painel-de-senha" element={<PainelSenhas som narrar />} />
         <Route
