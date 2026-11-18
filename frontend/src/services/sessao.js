@@ -1,33 +1,34 @@
-import { USUARIOS } from "../data/usuarios.js";
-
-const CHAVE = "nassautickets:sessao";
+import { api, CHAVE_SESSAO } from "./api";
 
 export function lerSessao() {
   try {
-    return JSON.parse(sessionStorage.getItem(CHAVE) || "null");
+    const sessao = JSON.parse(localStorage.getItem(CHAVE_SESSAO) || "null");
+    if (!sessao || typeof sessao.token !== "string" || !sessao.token ||
+        typeof sessao.usuario !== "string" ||
+        !["atendente", "gestor"].includes(sessao.perfil)) return null;
+    return sessao;
   } catch {
     return null;
   }
 }
 
-export const obterSessao = lerSessao;
-
-// Guarda apenas nome e perfil; a senha nunca é armazenada.
-export function entrar(usuario, senha) {
-  const achado = USUARIOS.find((u) => u.usuario === usuario.trim().toLowerCase() && u.senha === senha);
-  if (!achado) return null;
-  const { nome, funcao, perfil } = achado;
-  const sessao = { nome, funcao, perfil };
-  sessionStorage.setItem(CHAVE, JSON.stringify(sessao));
+export async function entrar(usuario, senha) {
+  const dados = await api.post("/auth/login", { usuario: usuario.trim(), senha }, { autenticado: false });
+  const sessao = {
+    token: dados.token,
+    usuario: dados.usuario,
+    perfil: String(dados.perfil).toLowerCase(),
+  };
+  if (!sessao.token || typeof sessao.usuario !== "string" ||
+      !["atendente", "gestor"].includes(sessao.perfil)) {
+    throw new Error("Resposta de login inválida.");
+  }
+  localStorage.setItem(CHAVE_SESSAO, JSON.stringify(sessao));
   return sessao;
 }
 
 export function sair() {
-  sessionStorage.removeItem(CHAVE);
-}
-
-export function salvarSessao(sessao) {
-  sessionStorage.setItem(CHAVE, JSON.stringify(sessao));
+  localStorage.removeItem(CHAVE_SESSAO);
 }
 
 export function obterRotaInicial(perfil) {

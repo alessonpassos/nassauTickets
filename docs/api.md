@@ -16,8 +16,8 @@ O token carrega `sub` (id do usuário), `nome` e `perfil`, e expira em `JWT_EXPI
 | Perfil | Pode |
 | ------ | ---- |
 | (público) | `/health`, `/auth/login`, `/guiches`, `POST /senhas`, `GET /senhas/atual` |
-| `ATENDENTE` | `GET /senhas/fila`, `chamar`, `repetir`, `iniciar`, `finalizar`, `nao-compareceu` |
-| `GESTOR` | `GET /senhas/fila` e todos os `/relatorios/*` |
+| `ATENDENTE` | `GET /senhas/fila`, `GET /senhas/guiche/:guicheId`, `chamar`, `repetir`, `iniciar`, `finalizar`, `nao-compareceu` |
+| `GESTOR` | `GET /senhas/fila`, `GET /senhas/guiche/:guicheId` e todos os `/relatorios/*` |
 
 Sem token ou token inválido: **401**. Perfil sem permissão: **403**.
 
@@ -31,6 +31,9 @@ Sem token ou token inválido: **401**. Perfil sem permissão: **403**.
 | POST | `/senhas` | Público | Emite senha (totem) |
 | GET | `/senhas/atual` | Público | Chamada atual + histórico (5 no total) |
 | GET | `/senhas/fila` | Atendente, gestor | Senhas `AGUARDANDO` do dia |
+| GET | `/senhas/guiche/:guicheId` | Atendente, gestor | Senha ativa do guichê ou `null` |
+| GET | `/senhas/:codigo/registro` | Atendente responsável | Registro salvo ou `null` |
+| POST | `/senhas/:codigo/registro` | Atendente responsável | Cria ou atualiza o registro em andamento |
 | POST | `/senhas/chamar` | Atendente | Chama a próxima senha |
 | POST | `/senhas/repetir` | Atendente | Segunda (e última) chamada |
 | POST | `/senhas/iniciar` | Atendente | Inicia o atendimento |
@@ -38,8 +41,8 @@ Sem token ou token inválido: **401**. Perfil sem permissão: **403**.
 | POST | `/senhas/nao-compareceu` | Atendente | Marca abandono após a 2ª chamada |
 | GET | `/relatorios/diario` | Gestor | Resumo do dia |
 | GET | `/relatorios/mensal` | Gestor | Resumo do mês |
-| GET | `/relatorios/detalhado` | Gestor | Lista de senhas do dia |
-| GET | `/relatorios/auditoria` | Gestor | Chamadas do dia |
+| GET | `/relatorios/detalhado` | Gestor | Lista de senhas do dia ou mês |
+| GET | `/relatorios/auditoria` | Gestor | Chamadas do dia ou mês |
 
 ## Detalhes
 
@@ -77,7 +80,7 @@ Devolve no máximo **5** chamadas do dia (a mais recente em `chamadaAtual`, as d
 {
   "chamadaAtual": {
     "atendimento_id": 7, "codigo": "261117-SG002", "tipo": "SG",
-    "status": "CHAMADA", "guiche": 2,
+    "status": "CHAMADA", "guiche": 2, "emitida_em": "2026-11-17T10:21:00.000Z",
     "primeira_chamada_em": "2026-11-17T10:30:00.000Z", "segunda_chamada_em": null
   },
   "historico": [ { "...": "mesmos campos" } ]
@@ -89,6 +92,14 @@ Sem chamadas hoje: `{ "chamadaAtual": null, "historico": [] }`. Aqui `guiche` é
 ### `GET /senhas/fila`
 
 `200` → `[{ "id", "codigo", "tipo", "sequencial", "status": "AGUARDANDO", "emitida_em" }, ...]`, só do dia, por ordem de emissão.
+
+### `GET /senhas/guiche/:guicheId`
+
+Requer token de atendente ou gestor. Retorna a senha do dia com estado `CHAMADA`, `CHAMADA_NOVAMENTE` ou `EM_ATENDIMENTO` naquele guichê, independentemente do histórico público. Sem senha ativa: `200` com `null`.
+
+Campos: `id`, `codigo`, `tipo`, `status`, `emitida_em`, `guiche_id`, `guiche` (número), `atendente_id`, `atendente` (nome), `primeira_chamada_em`, `segunda_chamada_em`, `inicio_atendimento_em`, `fim_atendimento_em`, `pode_operar`.
+
+`pode_operar` indica se o atendimento pertence ao usuário do token. Não concede permissão ao gestor para executar ações de atendente. ID inválido: 400; guichê inexistente/inativo: 404.
 
 ### `POST /senhas/chamar`
 
@@ -104,6 +115,7 @@ Corpo: `{ "guiche_id": 1 }`. Escolhe a próxima senha pela regra SP → (SE|SG) 
 Corpo: `{ "guiche_id": 1 }`. Repete a última senha chamada **naquele guichê**, uma única vez.
 
 - `200` → `{ "senha_id", "codigo", "guiche_id", "status": "CHAMADA_NOVAMENTE" }`
+- `403` → senha pertence a outro atendente
 - `404` → o guichê não chamou senha hoje
 - `409` → a senha já foi chamada duas vezes, ou não está no estado `CHAMADA`
 
@@ -119,7 +131,8 @@ Corpo: `{ "codigo": "261117-SG002" }`
 
 - `200` → `{ "codigo": "261117-SG002", "status": "EM_ATENDIMENTO" }`
 - `400` → `codigo` ausente
-- `404` → senha não encontrada
+- `403` → senha pertence a outro atendente
+- `404` → senha não encontrada no dia
 - `409` → transição inválida (ex.: `Transição inválida: AGUARDANDO → ATENDIDA.`)
 
 ### Relatórios (somente gestor)
@@ -144,11 +157,13 @@ Datas no formato `YYYY-MM-DD`; mês em `YYYY-MM`. Sem parâmetro, usa hoje (data
 
 **`GET /relatorios/detalhado?data=&tipo=`** (`tipo` opcional: `SP`, `SE` ou `SG`)
 
-`200` → `[{ "codigo", "tipo", "status", "emitida_em", "guiche" }, ...]` (`guiche` é `null` se a senha não foi chamada).
+`200` → `[{ "codigo", "tipo", "status", "emitida_em", "guiche", "inicio_atendimento_em", "fim_atendimento_em" }, ...]` (`guiche` é `null` se a senha não foi chamada).
 
 **`GET /relatorios/auditoria?data=`**
 
-`200` → `[{ "codigo", "atendente_id", "atendente", "guiche", "primeira_chamada_em", "segunda_chamada_em" }, ...]`
+`200` → `[{ "codigo", "atendente_id", "atendente", "guiche", "emitida_em", "primeira_chamada_em", "segunda_chamada_em", "inicio_atendimento_em", "fim_atendimento_em" }, ...]`
+
+As rotas `detalhado` e `auditoria` também aceitam `?mes=YYYY-MM`, com o mês inteiro, inclusive dias sem atendimento. `mes` tem precedência sobre `data`; o front envia somente um deles. Início e fim são `null` quando o atendimento ainda não chegou àquela etapa. O front mostra data e hora nas tabelas. Em `detalhado`, `tipo` continua opcional.
 
 ## Status HTTP
 
@@ -171,8 +186,36 @@ O backend usa `codigo`, `status`, `emitida_em`. O frontend usa `numero`, `estado
 ## Ainda não implementado
 
 - Verificação do expediente (7h–17h) na emissão e na chamada: hoje **não** devolve 422 fora do horário.
-- Campos de atendimento (início/fim) no relatório detalhado e na auditoria.
+- Persistência da ficha do atendimento (formulário desativado no front).
 - Rotina de descarte das senhas que sobram às 17h.
 - Limite de tentativas no login e `helmet`.
 
 Acompanhe em [pendencias.md](pendencias.md).
+
+## Registro operacional do atendimento
+
+Requer a tabela instalada por `docs/mer/migrations/001-registro-atendimento.sql` e token do atendente responsável. Estas rotas não são públicas e não recebem o ID do atendente pelo corpo.
+
+### `GET /senhas/:codigo/registro`
+
+`200` retorna `null` se ainda não foi preenchido, ou o registro abaixo. O responsável também pode consultar um registro depois de finalizar o atendimento.
+
+### `POST /senhas/:codigo/registro`
+
+Cria ou substitui os campos do único registro daquele atendimento, apenas quando a senha é do dia e está `EM_ATENDIMENTO`.
+
+```json
+{
+  "tipoAtendimento": "exameDeSangue",
+  "setor": "laboratorio",
+  "observacao": "Encaminhado ao setor."
+}
+```
+
+- Tipo obrigatório: `exame`, `exameDeSangue`, `vacinacao` ou `resultado`.
+- Setor obrigatório: `salaDeExames`, `salaDeVacinacao`, `laboratorio` ou `recepcao`.
+- Observação opcional: texto de até 200 caracteres, sem identificação pessoal ou dados de saúde, conforme o escopo anônimo do projeto.
+- `200`: campos persistidos, com `atualizadoEm`.
+- `400`: campos inválidos; `401`: sem sessão; `403`: perfil ou responsável incorreto; `404`: atendimento inexistente; `409`: atendimento não está em andamento hoje; `503`: tabela ainda não instalada.
+
+A gravação usa transação e bloqueio da mesma linha de senha utilizada pela finalização. Repetir o salvamento atualiza o registro, sem duplicá-lo.

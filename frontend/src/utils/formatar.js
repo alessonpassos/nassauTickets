@@ -17,4 +17,12 @@ export function duracao(ms) {
   return `${Math.floor(s / 60)} min ${s % 60} s`;
 }
 
-export const sequencia = (numero) => numero.split("-")[1];
+export const sequencia = (numero) => String(numero ?? "").split("-").at(-1);
+
+export function dataHoraCompleta(iso) {
+  if (!iso) return "—";
+  const data = new Date(iso);
+  return Number.isNaN(data.getTime()) ? "—" : data.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "medium",
+  });
+}

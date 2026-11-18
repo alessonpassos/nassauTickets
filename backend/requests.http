@@ -123,3 +123,27 @@ Authorization: Bearer {{tokenGestor}}
 ### Relatório de auditoria
 GET {{host}}/relatorios/auditoria
 Authorization: Bearer {{tokenGestor}}
+
+### Senha ativa do guichê (não depende do histórico público)
+GET {{host}}/senhas/guiche/1
+Authorization: Bearer {{tokenAtendente}}
+
+### Detalhado do mês (altere o mês)
+GET {{host}}/relatorios/detalhado?mes=2026-11
+Authorization: Bearer {{tokenGestor}}
+
+### Auditoria do mês (altere o mês)
+GET {{host}}/relatorios/auditoria?mes=2026-11
+Authorization: Bearer {{tokenGestor}}
+
+
+### Consultar registro (substitua o código por uma senha do atendente)
+GET {{host}}/senhas/261117-SP001/registro
+Authorization: Bearer {{tokenAtendente}}
+
+### Salvar registro (após iniciar atendimento)
+POST {{host}}/senhas/261117-SP001/registro
+Authorization: Bearer {{tokenAtendente}}
+Content-Type: application/json
+
+{ "tipoAtendimento": "exameDeSangue", "setor": "laboratorio", "observacao": "Encaminhado ao setor." }

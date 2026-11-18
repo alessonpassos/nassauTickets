@@ -11,14 +11,14 @@ export function buscarMensal(mes) {
   return api.get("/relatorios/mensal", { mes });
 }
 
-export function buscarDetalhado(data, tipo) {
-  const params = { data };
+export function buscarDetalhado(data, tipo, mes) {
+  const params = mes ? { mes } : { data };
   if (tipo && TIPOS.includes(tipo)) params.tipo = tipo;
   return api.get("/relatorios/detalhado", params);
 }
 
-export function buscarAuditoria(data) {
-  return api.get("/relatorios/auditoria", { data });
+export function buscarAuditoria(data, mes) {
+  return api.get("/relatorios/auditoria", mes ? { mes } : { data });
 }
 
 export function normalizarDetalhado(linhas) {
@@ -27,7 +27,7 @@ export function normalizarDetalhado(linhas) {
     senha: l.codigo,
     tipo: l.tipo,
     emissao: l.emitida_em ?? null,
-    atendimento: null,
+    atendimento: l.inicio_atendimento_em ?? null,
     guiche: l.guiche ?? null,
     estado: l.status ?? "",
   }));
@@ -41,7 +41,7 @@ export function normalizarAuditoria(linhas) {
     guiche: l.guiche ?? "—",
     primeiraChamada: l.primeira_chamada_em ?? null,
     segundaChamada: l.segunda_chamada_em ?? null,
-    inicio: null,
-    fim: null,
+    inicio: l.inicio_atendimento_em ?? null,
+    fim: l.fim_atendimento_em ?? null,
   }));
 }

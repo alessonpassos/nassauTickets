@@ -6,12 +6,14 @@ import IconeTotem from "./IconeTotem";
 export default function FormularioTotem({ aberto, aoEmitir }) {
   const [enviando, setEnviando] = useState("");
   const [erro, setErro] = useState("");
+  const [ultimoTipo, setUltimoTipo] = useState("");
   const envioEmCurso = useRef(false);
 
   async function emitir(tipo) {
     if (envioEmCurso.current || !aberto) return;
     envioEmCurso.current = true;
     setEnviando(tipo);
+    setUltimoTipo(tipo);
     setErro("");
     try {
       aoEmitir(traduzirSenha(await api.post("/senhas", { tipo }, { autenticado: false })));
@@ -56,9 +58,10 @@ export default function FormularioTotem({ aberto, aoEmitir }) {
         </p>
       )}
       {erro && (
-        <p className="totem-erro" role="alert">
-          {erro}
-        </p>
+        <div className="totem-erro" role="alert">
+          <p>{erro}</p>
+          <button type="button" className="botao botao--secundario" disabled={!aberto || !!enviando} onClick={() => emitir(ultimoTipo)}>Tentar novamente</button>
+        </div>
       )}
     </section>
   );

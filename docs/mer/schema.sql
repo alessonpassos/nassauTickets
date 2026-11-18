@@ -70,3 +70,15 @@ CREATE TABLE atendimentos (
 
 -- Dados iniciais de exemplo
 INSERT INTO guiches (numero) VALUES (1), (2), (3);
+
+-- Registro operacional, um por atendimento; não contém identificação pessoal.
+CREATE TABLE IF NOT EXISTS registros_atendimento (
+    atendimento_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    tipo_atendimento VARCHAR(30) NOT NULL,
+    setor VARCHAR(30) NOT NULL,
+    observacao VARCHAR(200) NOT NULL DEFAULT '',
+    atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_registro_atendimento
+        FOREIGN KEY (atendimento_id) REFERENCES atendimentos(id)
+) ENGINE=InnoDB;

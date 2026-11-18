@@ -4,7 +4,7 @@ import { horaCompleta, sequencia } from "../utils/formatar";
 
 const FILTROS = ["TODAS", "SP", "SE", "SG"];
 
-export default function FilaEspera({ senhas }) {
+export default function FilaEspera({ senhas, carregando = false }) {
   const [filtro, setFiltro] = useState("TODAS");
   const visiveis = senhas.filter((s) => filtro === "TODAS" || s.tipo === filtro);
 
@@ -29,7 +29,7 @@ export default function FilaEspera({ senhas }) {
         ))}
       </div>
 
-      {visiveis.length === 0 ? (
+      {carregando ? <p className="vazio" role="status">Carregando fila…</p> : visiveis.length === 0 ? (
         <p className="vazio">
           {senhas.length === 0 ? "Nenhuma senha aguardando. Emita uma senha no Totem." : "Nenhuma senha deste tipo."}
         </p>

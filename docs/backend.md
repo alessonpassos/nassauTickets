@@ -41,6 +41,8 @@ O servidor **não inicia** sem `JWT_SECRET`. `criar_usuario.js` grava o hash `bc
 | POST | `/api/senhas` | Público | Emissão; sequência diária por tipo, com trava |
 | GET | `/api/senhas/atual` | Público | 5 últimas chamadas do dia |
 | GET | `/api/senhas/fila` | Atendente, gestor | Aguardando, só do dia |
+| GET | `/api/senhas/guiche/:guicheId` | Atendente, gestor | Senha ativa e dados do atendimento ou `null` |
+| GET, POST | `/api/senhas/:codigo/registro` | Atendente responsável | Consulta e gravação do registro operacional |
 | POST | `/api/senhas/chamar` | Atendente | Atendente vem do token |
 | POST | `/api/senhas/repetir` | Atendente | Por guichê, uma única vez |
 | POST | `/api/senhas/iniciar` | Atendente | `CHAMADA`/`CHAMADA_NOVAMENTE` → `EM_ATENDIMENTO` |
@@ -59,6 +61,8 @@ Script versionado em [`docs/mer/schema.sql`](mer/schema.sql); diagrama em [`docs
 | `senhas` | `id`, `codigo` (único), `tipo`, `sequencial`, `data_emissao`, `emitida_em`, `status`, `descartada_em`; chave única `(data_emissao, tipo, sequencial)` |
 | `atendimentos` | `senha_id` (único), `atendente_id`, `guiche_id`, `primeira_chamada_em`, `segunda_chamada_em`, `inicio_atendimento_em`, `fim_atendimento_em` |
 
+Bancos existentes devem executar `docs/mer/migrations/001-registro-atendimento.sql`, que cria a tabela `registros_atendimento` sem recriar dados. Ela usa `atendimento_id` como chave primária e estrangeira, com `tipo_atendimento`, `setor`, `observacao` (até 200 caracteres) e `atualizado_em`. O `schema.sql` já inclui a tabela para novas instalações.
+
 Estados de `senhas.status`: `EMITIDA`, `AGUARDANDO`, `CHAMADA`, `CHAMADA_NOVAMENTE`, `EM_ATENDIMENTO`, `ATENDIDA`, `NAO_COMPARECEU`. A emissão grava direto `AGUARDANDO`; `EMITIDA` existe no enum mas não é usado.
 
 A auditoria não tem tabela própria: sai de `atendimentos` (atendente, guichê, 1ª e 2ª chamada, início e fim).
@@ -70,7 +74,8 @@ A auditoria não tem tabela própria: sai de `atendimentos` (atendente, guichê,
 - **Guichê ocupado:** não chama outra senha enquanto houver `CHAMADA`, `CHAMADA_NOVAMENTE` ou `EM_ATENDIMENTO` naquele guichê (409).
 - **Segunda chamada:** uma só, e só no guichê que chamou (409 depois).
 - **Transições:** qualquer transição fora da tabela de [api.md](api.md) devolve 409.
-- **Filtro por dia:** fila, painel, chamada e repetição consideram só senhas emitidas hoje (`CURDATE()` do banco).
+- **Propriedade:** repetição e transições conferem o atendente do token; não alteram a senha de outro usuário (403).
+- **Filtro por dia:** fila, senha ativa do guichê, painel, chamada, repetição e transições consideram só senhas emitidas hoje (`CURDATE()` do banco).
 
 ## Segurança
 
@@ -112,5 +117,7 @@ O arquivo [`backend/requests.http`](../backend/requests.http) reúne requisiçõ
 - [ ] Expediente 7h–17h verificado no servidor (422 fora do horário)
 - [ ] Descarte das senhas em espera às 17h
 - [ ] `helmet` e limite de tentativas no login
-- [ ] Início/fim de atendimento nos relatórios detalhado e de auditoria
-- [ ] Testes automatizados
+- [x] Início/fim de atendimento nos relatórios detalhado e de auditoria
+- [x] Testes automatizados das rotas com banco simulado
+- [x] Persistência da ficha, vinculada ao atendimento e protegida por proprietário/estado
+- [ ] Validação das consultas e concorrência com MySQL real

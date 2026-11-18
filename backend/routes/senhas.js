@@ -84,7 +84,7 @@ router.get(
   "/atual",
   asyncHandler(async (req, res) => {
     const [ultimas] = await pool.query(
-      `SELECT a.id AS atendimento_id, s.codigo, s.tipo, s.status,
+      `SELECT a.id AS atendimento_id, s.codigo, s.tipo, s.status, s.emitida_em,
               g.numero AS guiche, a.primeira_chamada_em, a.segunda_chamada_em
          FROM atendimentos a
          JOIN senhas s ON s.id = a.senha_id
@@ -110,6 +110,34 @@ router.get(
         ORDER BY emitida_em ASC, id ASC`,
     );
     res.json(fila);
+  }),
+);
+
+// A senha ativa não depende das cinco últimas chamadas do painel público.
+router.get(
+  "/guiche/:guicheId",
+  verificarToken,
+  exigirPerfil("ATENDENTE", "GESTOR"),
+  asyncHandler(async (req, res) => {
+    const guicheId = lerGuicheId({ guiche_id: req.params.guicheId });
+    const [guiches] = await pool.query("SELECT id FROM guiches WHERE id = ? AND ativo = 1", [guicheId]);
+    if (!guiches.length) throw new ErroHttp(404, "Guichê não encontrado ou inativo.");
+    const [linhas] = await pool.query(
+      `SELECT s.id, s.codigo, s.tipo, s.status, s.emitida_em,
+              a.guiche_id, g.numero AS guiche, a.atendente_id, u.nome AS atendente,
+              a.primeira_chamada_em, a.segunda_chamada_em,
+              a.inicio_atendimento_em, a.fim_atendimento_em
+         FROM atendimentos a
+         JOIN senhas s ON s.id = a.senha_id
+         JOIN guiches g ON g.id = a.guiche_id
+         JOIN usuarios u ON u.id = a.atendente_id
+        WHERE a.guiche_id = ? AND s.data_emissao = CURDATE() AND s.status IN (?)
+        ORDER BY a.primeira_chamada_em DESC, a.id DESC
+        LIMIT 1`,
+      [guicheId, ESTADOS_OCUPAM_GUICHE],
+    );
+    const atual = linhas[0];
+    res.json(atual ? { ...atual, pode_operar: Number(atual.atendente_id) === req.usuario.id } : null);
   }),
 );
 
@@ -208,7 +236,7 @@ router.post(
 
     const resultado = await comTransacao(async (conn) => {
       const [linhas] = await conn.query(
-        `SELECT a.id AS atendimento_id, s.id AS senha_id, s.codigo, s.status
+        `SELECT a.id AS atendimento_id, a.atendente_id, s.id AS senha_id, s.codigo, s.status
            FROM atendimentos a
            JOIN senhas s ON s.id = a.senha_id
           WHERE a.guiche_id = ? AND s.data_emissao = CURDATE()
@@ -221,6 +249,9 @@ router.post(
         throw new ErroHttp(404, "Este guichê não tem senha chamada hoje.");
 
       const at = linhas[0];
+      if (Number(at.atendente_id) !== req.usuario.id) {
+        throw new ErroHttp(403, "Esta senha está sendo atendida por outro atendente.");
+      }
       if (at.status !== "CHAMADA") {
         throw new ErroHttp(
           409,
@@ -250,15 +281,20 @@ router.post(
   }),
 );
 
-async function mudarEstado(codigo, { de, para, colunaHorario }) {
+async function mudarEstado(codigo, atendenteId, { de, para, colunaHorario }) {
   return comTransacao(async (conn) => {
     const [linhas] = await conn.query(
-      "SELECT id, status FROM senhas WHERE codigo = ? FOR UPDATE",
+      `SELECT s.id, s.status, a.atendente_id
+         FROM senhas s JOIN atendimentos a ON a.senha_id = s.id
+        WHERE s.codigo = ? AND s.data_emissao = CURDATE() FOR UPDATE`,
       [codigo],
     );
     if (!linhas.length) throw new ErroHttp(404, "Senha não encontrada.");
 
-    const { id, status } = linhas[0];
+    const { id, status, atendente_id } = linhas[0];
+    if (Number(atendente_id) !== atendenteId) {
+      throw new ErroHttp(403, "Esta senha está sendo atendida por outro atendente.");
+    }
     if (!de.includes(status)) {
       throw new ErroHttp(409, `Transição inválida: ${status} → ${para}.`);
     }
@@ -282,7 +318,7 @@ function rotaDeTransicao(caminho, config) {
     asyncHandler(async (req, res) => {
       const codigo = String(req.body?.codigo ?? "").trim();
       if (!codigo) throw new ErroHttp(400, "codigo da senha é obrigatório.");
-      res.json(await mudarEstado(codigo, config));
+      res.json(await mudarEstado(codigo, req.usuario.id, config));
     }),
   );
 }

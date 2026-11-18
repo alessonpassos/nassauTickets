@@ -68,7 +68,7 @@ Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 | Login (`/login`) | Usuários e senhas em `frontend/src/data/usuarios.js` | `POST /api/auth/login`: senha com hash `bcrypt`, resposta com token JWT; sessão guardada sem a senha |
 | Autorização | Só no front (rota protegida) | Também no servidor: middleware devolve 401 (sem token/token inválido) e 403 (perfil sem permissão) |
 | Relatórios (`/relatorios`) | Calculados sobre o `localStorage` | `GET /api/relatorios/diario`, `mensal`, `detalhado` e `auditoria`, só para o gestor |
-| Área do atendente (`/atendente`) | Regras de chamada no `localStorage` | Rotas do backend prontas (chamar, repetir, iniciar, finalizar, não compareceu); **tela ainda em migração para a API** — ver [docs/pendencias.md](docs/pendencias.md) |
+| Área do atendente (`/atendente`) | Regras de chamada no `localStorage` | Guichês da API, senha ativa por guichê e ações reais (chamar, repetir, iniciar, finalizar, não compareceu) |
 | Persistência | `localStorage` / `sessionStorage` | MySQL (`usuarios`, `guiches`, `senhas`, `atendimentos`) |
 | Regra de prioridade | No front | No backend (`ordemDeChamada`), SP → (SE ou SG) → SP |
 | Não comparecimento | Só no front | Validado no backend: só após a 2ª chamada (409 em outro caso) |
@@ -86,9 +86,9 @@ Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 | `senhas` | Código `YYMMDD-PPSQ`, tipo, sequencial, data e hora de emissão, estado, descarte |
 | `atendimentos` | Senha, atendente, guichê, 1ª e 2ª chamada, início e fim do atendimento (base da auditoria) |
 
-**Dados persistidos no navegador (`sessionStorage`).** Sessão (`nassautickets:sessao`: token, nome e perfil — nunca a senha), guichê escolhido, senha em atendimento e o modo "janela de totem". Nenhuma senha de usuário é guardada.
+**Dados persistidos no navegador.** Uma única sessão no `localStorage` (`nassautickets:sessao`: `token`, `usuario` e `perfil` — nunca a senha). O `sessionStorage` é usado somente para o modo "janela de totem". A fila e a senha em atendimento são consultadas no servidor, sem cópias no navegador.
 
-**Legado da AV1.** O arquivo `frontend/src/services/filaService.js` (que usava `localStorage`) ainda existe no repositório e deve ser removido quando a tela do atendente terminar a migração.
+**Revisão de integração AV2.** [Guia de aplicação e validação](docs/revisao-integracao-av2.md). O [registro do atendimento](docs/registro-atendimento.md) salva tipo, encaminhamento e observação no servidor; bancos existentes precisam da migração `001-registro-atendimento.sql`. Há testes automatizados com `npm test` nas pastas `backend` e `frontend`.
 
 **Privacidade.** O totem é anônimo: a emissão não pede nem grava nome, CPF ou qualquer dado pessoal.
 
@@ -192,10 +192,10 @@ Base: `http://localhost:3000/api`. Erros no formato `{ "erro": "mensagem" }`. Au
 
 **Limitações conhecidas** (lista completa e atualizada em [docs/pendencias.md](docs/pendencias.md)):
 
-- A tela `/atendente` ainda não foi totalmente migrada para a API.
-- O expediente (7h–17h) **ainda não é verificado no backend**, e a configuração do totem no front está com 0–24 h.
+- O expediente (7h–17h) **ainda não é verificado no backend**; o front do Totem bloqueia fora de 7h–17h.
 - O descarte das senhas que sobram às 17h ainda não é feito por rotina; os relatórios apenas tratam como descartadas as senhas em espera de dias anteriores.
-- Ainda não há `helmet`, limite de tentativas de login nem testes automatizados.
+- Ainda não há `helmet` nem limite de tentativas de login.
+- O registro do atendimento depende da migração `docs/mer/migrations/001-registro-atendimento.sql`; a validação com MySQL/MariaDB real continua necessária.
 
 **Contingência quando o backend ou o banco caem.**
 

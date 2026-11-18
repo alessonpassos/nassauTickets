@@ -20,7 +20,7 @@ async function hojeDoBanco() {
 
 function lerData(valor, hoje) {
   if (valor === undefined || valor === "") return hoje;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor) || Number.isNaN(Date.parse(valor))) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor) || Number.isNaN(Date.parse(valor)) || new Date(valor).toISOString().slice(0, 10) !== valor) {
     throw new ErroHttp(400, "data inválida. Use o formato YYYY-MM-DD.");
   }
   return valor;
@@ -93,23 +93,30 @@ router.get(
   }),
 );
 
+function periodo(query, hoje) {
+  return query.mes !== undefined
+    ? filtroMes(lerMes(query.mes, hoje))
+    : filtroDia(lerData(query.data, hoje));
+}
+
 router.get(
   "/detalhado",
   asyncHandler(async (req, res) => {
-    const data = lerData(req.query.data, await hojeDoBanco());
-    const params = [data];
+    const { sql, params } = periodo(req.query, await hojeDoBanco());
     let filtroTipo = "";
-    if (TIPOS.includes(req.query.tipo)) {
+    if (req.query.tipo) {
+      if (!TIPOS.includes(req.query.tipo)) throw new ErroHttp(400, "tipo deve ser SP, SE ou SG.");
       filtroTipo = " AND s.tipo = ?";
       params.push(req.query.tipo);
     }
     const [linhas] = await pool.query(
-      `SELECT s.codigo, s.tipo, s.status, s.emitida_em, g.numero AS guiche
+      `SELECT s.codigo, s.tipo, s.status, s.emitida_em, g.numero AS guiche,
+              a.inicio_atendimento_em, a.fim_atendimento_em
          FROM senhas s
          LEFT JOIN atendimentos a ON a.senha_id = s.id
          LEFT JOIN guiches g ON g.id = a.guiche_id
-        WHERE s.data_emissao = ?${filtroTipo}
-        ORDER BY s.emitida_em ASC`,
+        WHERE ${sql}${filtroTipo}
+        ORDER BY s.emitida_em ASC, s.id ASC`,
       params,
     );
     res.json(linhas);
@@ -119,17 +126,18 @@ router.get(
 router.get(
   "/auditoria",
   asyncHandler(async (req, res) => {
-    const data = lerData(req.query.data, await hojeDoBanco());
+    const { sql, params } = periodo(req.query, await hojeDoBanco());
     const [linhas] = await pool.query(
-      `SELECT s.codigo, a.atendente_id, u.nome AS atendente, g.numero AS guiche,
-              a.primeira_chamada_em, a.segunda_chamada_em
+      `SELECT s.codigo, s.emitida_em, a.atendente_id, u.nome AS atendente, g.numero AS guiche,
+              a.primeira_chamada_em, a.segunda_chamada_em,
+              a.inicio_atendimento_em, a.fim_atendimento_em
          FROM atendimentos a
          JOIN senhas s ON s.id = a.senha_id
          JOIN guiches g ON g.id = a.guiche_id
          JOIN usuarios u ON u.id = a.atendente_id
-        WHERE s.data_emissao = ?
-        ORDER BY a.primeira_chamada_em DESC`,
-      [data],
+        WHERE ${sql}
+        ORDER BY a.primeira_chamada_em DESC, a.id DESC`,
+      params,
     );
     res.json(linhas);
   }),

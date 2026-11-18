@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormularioLogin from "../components/FormularioLogin";
 import Logo from "../components/Logo";
-import { api } from "../services/api";
-import { lerSessao, salvarSessao, sair, obterRotaInicial} from "../services/sessao";
+import { lerSessao, entrar, sair, obterRotaInicial} from "../services/sessao";
 import "../styles/login.css";
 
 const NOME_APP = "NassauTickets";
@@ -43,19 +42,7 @@ export default function Login() {
     setCarregando(true);
 
     try {
-      const dados = await api.post(
-        "/auth/login",
-        { usuario: usuario.trim(), senha },
-        { autenticado: false },
-      );
-      const perfil = String(dados.perfil).toLowerCase();
-      salvarSessao({
-        token: dados.token,
-        usuario: dados.usuario,
-        nome: dados.usuario,
-        perfil,
-        funcao: perfil === "gestor" ? "Gestor" : "Atendente",
-      });
+      const { perfil } = await entrar(usuario, senha);
       navegar(obterRotaInicial(perfil), { replace: true });
     } catch (erro) {
       sair();

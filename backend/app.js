@@ -7,6 +7,7 @@ const cors = require("cors");
 const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
 const senhasRouter = require("./routes/senhas");
+const registrosRouter = require("./routes/registros");
 const guichesRouter = require("./routes/guiches");
 const relatoriosRouter = require("./routes/relatorios");
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api", indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/senhas", senhasRouter);
+app.use("/api/senhas", registrosRouter);
 app.use("/api/guiches", guichesRouter);
 app.use("/api/relatorios", relatoriosRouter);
 

@@ -1,8 +1,7 @@
 // Cliente HTTP da API: envia o token JWT e trata 401 em um só lugar.
-import { obterSessao, sair } from "./sessao";
 
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/$/, "");
-export { obterSessao };
+export const CHAVE_SESSAO = "nassautickets:sessao";
 
 export function traduzirSenha(senha) {
   return {
@@ -23,7 +22,7 @@ export class ErroApi extends Error {
 }
 
 function encerrarSessao() {
-  sair();
+  localStorage.removeItem(CHAVE_SESSAO);
   if (window.location.pathname !== "/login") {
     window.location.replace("/login");
   }
@@ -42,8 +41,12 @@ async function requisitar(metodo, caminho, {
 
   const headers = { "Content-Type": "application/json" };
   if (autenticado) {
-    const sessao = obterSessao();
-    if (sessao?.token) headers.Authorization = `Bearer ${sessao.token}`;
+    try {
+      const sessao = JSON.parse(localStorage.getItem(CHAVE_SESSAO) || "null");
+      if (sessao?.token) headers.Authorization = `Bearer ${sessao.token}`;
+    } catch {
+      // Sessão ausente ou corrompida: a API responderá 401 nas rotas privadas.
+    }
   }
 
   let resposta;

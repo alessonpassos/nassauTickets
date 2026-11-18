@@ -2,10 +2,13 @@
   "name": "nassauTickets",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon ./bin/www --trace-warnings --trace-sync-io"
+    "dev": "nodemon ./bin/www --trace-warnings --trace-sync-io",
+    "test": "node --test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

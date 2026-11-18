@@ -6,25 +6,29 @@ Levantamento feito comparando o código atual com a especificação. Atualizado 
 
 | # | Onde | Pendência | Spec |
 | - | ---- | --------- | ---- |
-| 1 | `frontend/src/pages/PainelAtendente.jsx` | **Página quebrada pela migração incompleta:** importa `services/filaService.js` (versão local da AV1) e chama `listarFila`, `listarGuiches` etc., que não existem; usa `GUICHES` e `sair` sem definição. Criar o serviço com `fetch` para `/guiches`, `/senhas/fila`, `chamar`, `repetir`, `iniciar`, `finalizar` e `nao-compareceu` | RNF03 |
 | 2 | `backend/routes/senhas.js` | Expediente 7h–17h não é verificado na emissão nem na chamada (deve devolver 422 fora do horário) | RN08 |
-| 3 | `frontend/src/data/totem.js` | `abertura: 0` e `encerramento: 24`; o expediente deve ser 7–17 | RN08 |
 | 4 | `backend/` | Não há rotina que descarte, às 17h, as senhas que sobraram na fila; a coluna `descartada_em` nunca é preenchida (os relatórios só tratam como descartada a senha `AGUARDANDO` de dia anterior) | RN10, RF14 |
 | 5 | `backend/` | Falta `helmet` e limite de tentativas no login | Segurança/LGPD |
-| 6 | `backend/routes/relatorios.js` | Relatório detalhado não devolve início/fim do atendimento e a auditoria não devolve início/fim; o front mostra "—" nesses campos | Relatórios |
-| 7 | `frontend/src/data/usuarios.js`, `services/sessao.js` (`entrar`) | Restos da AV1: usuários e senhas em texto puro no bundle; não são mais usados no login. Remover | RNF01 |
-| 8 | `frontend/src/services/filaService.js`, `hooks/useFila.js` | Legado local da AV1; remover quando o item 1 for resolvido | — |
-| 9 | Frontend (todas as telas) | Falta botão "Tentar novamente" e dados locais de contingência com a mesma estrutura da interface | RNF03 |
-| 10 | `backend/routes/senhas.js` | `iniciar`, `finalizar` e `nao-compareceu` localizam a senha só pelo código; não conferem se ela pertence ao atendente/guichê nem se é do dia | Segurança |
-| 11 | `frontend/src/components/FichaPaciente.jsx` | Registro do paciente não é persistido no servidor (a tela avisa) | — |
-| 12 | Backend | Testes automatizados (hoje só `requests.http`) | Qualidade |
+| 9 | Frontend | Validar o tratamento de falhas com o servidor real; Totem e atendimento já têm "Tentar novamente" e painel tenta de novo automaticamente. Não há emissão de contingência local | RNF03 |
 | 13 | Projeto | Proposta e métrica de acompanhamento de desempenho além do tempo médio | Desafio |
 | 14 | Projeto | Regra dos ~5% de senhas não atendidas está ambígua; perguntar ao professor | RN |
 | 15 | `docs/` | Não existe `requirements/requisitos.md` nem `mer/mer.md` (só `requisitos.pdf`, o diagrama PNG e `schema.sql`); `docs/branding/` está vazia; `docs/mer/mockups/` é uma pasta vazia sobrando | Documentação |
 | 16 | `docs/equipe.md` | Detalhar, por integrante, em quais partes ChatGPT e Gemini foram usados | Documentação |
 | 17 | Repositório | Criar as tags `entrega-av1` e `entrega-av2`; garantir commits próprios de cada integrante | Processo |
 
-## Resolvido
+## Resolvido nesta revisão
+
+- Registro operacional do atendimento persistido na API; instalar `docs/mer/migrations/001-registro-atendimento.sql` nos bancos existentes. A tabela nova também precisa ser incluída no DER do grupo.
+
+- Sessão unificada no `localStorage`, login pela API e remoção de `data/usuarios.js`.
+- Atendimento integrado às rotas reais, guichês vindos da API e recuperação por `GET /senhas/guiche/:guicheId`.
+- Fila e senha ativa sem armazenamento local; ações bloqueadas durante carregamento/erro.
+- Verificação de proprietário e dia nas transições; proprietário também na repetição.
+- Expediente do Totem corrigido para 7–17; fluxo de impressão preservado.
+- Início/fim nos relatórios, nome do atendente, data/hora e detalhado/auditoria mensais.
+- 33 testes automatizados aprovados (18 no front e 15 no back), usando DOM e banco simulados. MySQL e navegador reais ainda precisam de validação.
+
+## Resolvido anteriormente
 
 | Onde | O que foi feito |
 | ---- | --------------- |

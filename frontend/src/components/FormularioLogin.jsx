@@ -1,14 +1,18 @@
 import { useState } from "react";
 
-export default function FormularioLogin({ aoEntrar }) {
+export default function FormularioLogin({ aoEntrar, aoDigitar, carregando = false, temErro = false, idErro }) {
   const [campos, setCampos] = useState({ usuario: "", senha: "" });
   const [erros, setErros] = useState({});
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
-  const alterar = (e) => setCampos((c) => ({ ...c, [e.target.name]: e.target.value }));
+  const alterar = (e) => {
+    setCampos((c) => ({ ...c, [e.target.name]: e.target.value }));
+    aoDigitar?.();
+  };
 
   function enviar(evento) {
     evento.preventDefault();
+    if (carregando) return;
     const novos = {};
     if (!campos.usuario.trim()) novos.usuario = "Informe o usuário.";
     if (!campos.senha) novos.senha = "Informe a senha.";
@@ -17,11 +21,11 @@ export default function FormularioLogin({ aoEntrar }) {
   }
 
   return (
-    <form className="login_form" onSubmit={enviar} noValidate>
+    <form className="login_form" onSubmit={enviar} noValidate aria-busy={carregando}>
       <div className="campo">
         <label className="campo_rotulo" htmlFor="usuario">Usuário</label>
         <input id="usuario" name="usuario" type="text" className="campo_entrada" placeholder="atendente ou gestor"
-          autoComplete="username" value={campos.usuario} onChange={alterar} aria-invalid={!!erros.usuario} />
+          autoComplete="username" value={campos.usuario} onChange={alterar} disabled={carregando} aria-invalid={!!erros.usuario || temErro} aria-describedby={idErro} />
         {erros.usuario && <p className="campo_erro" role="alert">{erros.usuario}</p>}
       </div>
 
@@ -29,7 +33,7 @@ export default function FormularioLogin({ aoEntrar }) {
         <label className="campo_rotulo" htmlFor="senha">Senha</label>
         <div className="campo_grupo-senha">
           <input id="senha" name="senha" type={mostrarSenha ? "text" : "password"} className="campo_entrada"
-            autoComplete="current-password" value={campos.senha} onChange={alterar} aria-invalid={!!erros.senha} />
+            autoComplete="current-password" value={campos.senha} onChange={alterar} disabled={carregando} aria-invalid={!!erros.senha || temErro} aria-describedby={idErro} />
           <button type="button" className="campo_alternar-senha" onClick={() => setMostrarSenha((a) => !a)} aria-pressed={mostrarSenha}>
             {mostrarSenha ? "Ocultar" : "Mostrar"}
           </button>
@@ -37,7 +41,7 @@ export default function FormularioLogin({ aoEntrar }) {
         {erros.senha && <p className="campo_erro" role="alert">{erros.senha}</p>}
       </div>
 
-      <button type="submit" className="botao botao--primario login_botao">Entrar</button>
+      <button type="submit" className="botao botao--primario login_botao" disabled={carregando}>{carregando ? "Entrando…" : "Entrar"}</button>
     </form>
   );
 }

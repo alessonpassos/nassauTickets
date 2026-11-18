@@ -4,7 +4,8 @@ import Cabecalho from "../components/Cabecalho";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Rodape from "../components/Rodape";
 import InfoUsuario from "../components/InfoUsuario";
-import { obterSessao, ErroApi } from "../services/api";
+import { ErroApi } from "../services/api";
+import { lerSessao } from "../services/sessao";
 import {
   TIPOS,
   buscarDiario,
@@ -14,7 +15,7 @@ import {
   normalizarDetalhado,
   normalizarAuditoria,
 } from "../services/relatorioService";
-import { horaCompleta } from "../utils/formatar";
+import { dataHoraCompleta } from "../utils/formatar";
 import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 import "../styles/relatorios.css";
@@ -67,11 +68,12 @@ function Tabela({ colunas, linhas, vazio }) {
 }
 
 export default function Relatorios() {
-  const sessao = obterSessao();
+  const sessao = lerSessao();
   const navigate = useNavigate();
   const [aba, setAba] = useState("diario");
   const [data, setData] = useState(hojeIso);
   const [mes, setMes] = useState(mesAtualIso);
+  const [periodo, setPeriodo] = useState("dia");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
@@ -93,10 +95,10 @@ export default function Relatorios() {
           const dados = await buscarMensal(mes);
           if (!cancelado) setResumo(dados);
         } else if (aba === "detalhado") {
-          const linhas = await buscarDetalhado(data, filtroTipo);
+          const linhas = await buscarDetalhado(data, filtroTipo, periodo === "mes" ? mes : undefined);
           if (!cancelado) setDetalhe(normalizarDetalhado(linhas));
         } else if (aba === "auditoria") {
-          const linhas = await buscarAuditoria(data);
+          const linhas = await buscarAuditoria(data, periodo === "mes" ? mes : undefined);
           if (!cancelado) setAuditoria(normalizarAuditoria(linhas));
         }
       } catch (e) {
@@ -118,7 +120,7 @@ export default function Relatorios() {
 
     carregar();
     return () => { cancelado = true; };
-  }, [aba, data, mes, filtroTipo, navigate]);
+  }, [aba, data, mes, periodo, filtroTipo, navigate]);
 
   const semResumo = !resumo || resumo.emitidas === 0;
 
@@ -141,7 +143,16 @@ export default function Relatorios() {
           ))}
         </div>
 
-        {(aba === "diario" || aba === "detalhado" || aba === "auditoria") && (
+        {(aba === "detalhado" || aba === "auditoria") && (
+          <div className="campo campo--guiche">
+            <label className="campo_rotulo" htmlFor="periodo-relatorio">Período</label>
+            <select id="periodo-relatorio" className="campo_entrada" value={periodo} onChange={(e) => setPeriodo(e.target.value)}>
+              <option value="dia">Dia</option><option value="mes">Mês</option>
+            </select>
+          </div>
+        )}
+
+        {(aba === "diario" || ((aba === "detalhado" || aba === "auditoria") && periodo === "dia")) && (
           <div className="campo campo--guiche">
             <label className="campo_rotulo" htmlFor="filtro-data">Data</label>
             <input id="filtro-data" type="date" className="campo_entrada" value={data}
@@ -149,7 +160,7 @@ export default function Relatorios() {
           </div>
         )}
 
-        {aba === "mensal" && (
+        {(aba === "mensal" || ((aba === "detalhado" || aba === "auditoria") && periodo === "mes")) && (
           <div className="campo campo--guiche">
             <label className="campo_rotulo" htmlFor="filtro-mes">Mês</label>
             <input id="filtro-mes" type="month" className="campo_entrada" value={mes}
@@ -198,7 +209,7 @@ export default function Relatorios() {
             </div>
             <Tabela vazio="Sem dados no período."
               colunas={["Senha", "Tipo", "Emissão", "Atendimento", "Guichê", "Estado"]}
-              linhas={detalhe.map((s) => [s.chave, s.senha, s.tipo, horaCompleta(s.emissao), horaCompleta(s.atendimento), s.guiche ?? "—", String(s.estado).replace("_", " ")])} />
+              linhas={detalhe.map((s) => [s.chave, s.senha, s.tipo, dataHoraCompleta(s.emissao), dataHoraCompleta(s.atendimento), s.guiche ?? "—", String(s.estado).replace("_", " ")])} />
           </section>
         )}
 
@@ -209,7 +220,7 @@ export default function Relatorios() {
             </div>
             <Tabela vazio="Sem dados no período."
               colunas={["Senha", "Atendente", "Guichê", "1ª chamada", "2ª chamada", "Início", "Fim"]}
-              linhas={auditoria.map((s) => [s.chave, s.senha, s.atendente, s.guiche, horaCompleta(s.primeiraChamada), horaCompleta(s.segundaChamada), horaCompleta(s.inicio), horaCompleta(s.fim)])} />
+              linhas={auditoria.map((s) => [s.chave, s.senha, s.atendente, s.guiche, dataHoraCompleta(s.primeiraChamada), dataHoraCompleta(s.segundaChamada), dataHoraCompleta(s.inicio), dataHoraCompleta(s.fim)])} />
           </section>
         )}
       </main>

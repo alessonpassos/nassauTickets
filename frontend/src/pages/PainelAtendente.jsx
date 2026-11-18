@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { lerSessao } from "../services/sessao";
+import useFila from "../hooks/useFila";
 import * as fila from "../services/filaService";
 import Cabecalho from "../components/Cabecalho";
 import CabecalhoPagina from "../components/CabecalhoPagina";
@@ -11,154 +12,70 @@ import InfoUsuario from "../components/InfoUsuario";
 import "../styles/layout.css";
 import "../styles/painelAtendente.css";
 
-const CHAVE_GUICHE = "nassautickets_guiche_atual";
-const CHAVE_ATUAL = "nassautickets_senha_atual";
-
-function lerJson(chave) {
-  try {
-    return JSON.parse(sessionStorage.getItem(chave));
-  } catch {
-    return null;
-  }
-}
-
-function obterGuicheInicial() {
-  const salvo = Number(sessionStorage.getItem(CHAVE_GUICHE));
-  return Number.isFinite(salvo) && salvo > 0 ? salvo : null;
-}
-
 export default function PainelAtendente() {
   const sessao = lerSessao();
   const [guiches, setGuiches] = useState([]);
-  const [guiche, setGuiche] = useState(obterGuicheInicial());
-  const [aguardando, setAguardando] = useState([]);
-  const [atual, setAtualEstado] = useState(() => lerJson(CHAVE_ATUAL));
-  const [erroFila, setErroFila] = useState("");
+  const [guiche, setGuiche] = useState(null);
+  const [erroGuiches, setErroGuiches] = useState("");
+  const [tentativaGuiches, setTentativaGuiches] = useState(0);
   const [mensagem, setMensagem] = useState(null);
   const [processando, setProcessando] = useState(false);
-
-  const nomeAtendente = sessao?.nome || "Atendente";
-  const funcaoAtendente = sessao?.funcao || "Atendimento";
-
-  function setAtual(senha) {
-    setAtualEstado(senha);
-    if (senha) sessionStorage.setItem(CHAVE_ATUAL, JSON.stringify(senha));
-    else sessionStorage.removeItem(CHAVE_ATUAL);
-  }
-
-  const atualizarFila = useCallback(async () => {
-    try {
-      setAguardando(await fila.listarFila());
-      setErroFila("");
-    } catch (e) {
-      setErroFila(e.message);
-    }
-  }, []);
+  const [salvandoRegistro, setSalvandoRegistro] = useState(false);
+  const [registroPendente, setRegistroPendente] = useState(false);
+  const emCurso = useRef(false);
+  const { aguardando, atual, erro, carregando, atualizar } = useFila(guiche);
+  const bloqueado = processando || salvandoRegistro || carregando || !!erro || !guiche || atual?.pode_operar === false;
+  const numeroGuiche = guiches.find((g) => Number(g.id) === guiche)?.numero;
 
   useEffect(() => {
-    atualizarFila();
-    const t = setInterval(atualizarFila, 4000);
-    return () => clearInterval(t);
-  }, [atualizarFila]);
-
-  useEffect(() => {
-    let ativo = true;
-
-    async function carregarGuiches() {
-      try {
-        const lista = await fila.listarGuiches();
-        if (!ativo || !Array.isArray(lista) || lista.length === 0) return;
-
-        setGuiches(lista);
-
-        setGuiche((atualId) => {
-          const existe = lista.some((g) => g.id === atualId);
-          const idValido = existe ? atualId : lista[0].id;
-          sessionStorage.setItem(CHAVE_GUICHE, String(idValido));
-          return idValido;
-        });
-      } catch (erro) {
-        if (ativo) {
-          setMensagem({
-            tipo: "erro",
-            texto: erro?.message || "Não foi possível carregar os guichês.",
-          });
-        }
-      }
-    }
-
-    carregarGuiches();
-    return () => {
-      ativo = false;
-    };
-  }, []);
-
-  function aoMudarGuiche(novoGuiche) {
-    setGuiche(novoGuiche);
-    sessionStorage.setItem(CHAVE_GUICHE, String(novoGuiche));
-    setMensagem(null);
-  }
-
-  useEffect(() => {
-    if (!mensagem || mensagem.tipo === "ok") return;
-    const timer = setTimeout(() => setMensagem(null), 5000);
-    return () => clearTimeout(timer);
-  }, [mensagem]);
+    const controle = new AbortController();
+    fila.listarGuiches({ signal: controle.signal }).then((lista) => {
+      if (controle.signal.aborted) return;
+      setGuiches(lista);
+      setGuiche((id) => lista.some((g) => Number(g.id) === id) ? id : Number(lista[0]?.id) || null);
+      setErroGuiches(lista.length ? "" : "Não há guichês ativos cadastrados.");
+    }).catch((falha) => {
+      if (!controle.signal.aborted) setErroGuiches(falha.message);
+    });
+    return () => controle.abort();
+  }, [tentativaGuiches]);
 
   async function executar(acao) {
-    if (processando) return;
+    if (emCurso.current || bloqueado || registroPendente) return;
+    emCurso.current = true;
     setProcessando(true);
     setMensagem(null);
-
     try {
-      const texto = await acao();
-      await atualizarFila();
-      setMensagem({ tipo: "ok", texto });
-    } catch (erro) {
-      await atualizarFila();
-      setMensagem({
-        tipo: "erro",
-        texto: erro?.message || "Não foi possível concluir a operação.",
-      });
+      setMensagem({ tipo: "ok", texto: await acao() });
+    } catch (falha) {
+      setMensagem({ tipo: "erro", texto: falha.message || "Não foi possível concluir a operação." });
     } finally {
+      atualizar();
+      emCurso.current = false;
       setProcessando(false);
     }
   }
 
-  function aplicar(resposta, encerrada = false) {
-    setAtual(encerrada ? null : { ...atual, ...resposta });
-  }
-
-  function comSenhaAtual(callback) {
-    if (!atual?.codigo) {
-      setMensagem({ tipo: "erro", texto: "Não há senha atual para esta ação." });
-      return;
-    }
-    return executar(() => callback(atual.codigo));
-  }
-
   const acoes = {
     chamarProxima: () => executar(async () => {
-      if (!guiche) throw new Error("Selecione um guichê.");
-      const s = await fila.chamarProxima(guiche);
-      setAtual(s);
-      return `Senha ${s.codigo} chamada.`;
+      const senha = await fila.chamarProxima(guiche);
+      return `Senha ${senha.codigo} chamada.`;
     }),
-    chamarNovamente: () => comSenhaAtual(async (codigo) => {
-      aplicar(await fila.chamarNovamente(guiche));
-      return `Última chamada para ${codigo}.`;
+    chamarNovamente: () => executar(async () => {
+      await fila.chamarNovamente(guiche);
+      return `Última chamada para ${atual.codigo}.`;
     }),
-    iniciar: () => comSenhaAtual(async () => {
-      aplicar(await fila.iniciarAtendimento(atual.codigo));
+    iniciar: () => executar(async () => {
+      await fila.iniciarAtendimento(atual.codigo);
       return "Atendimento iniciado.";
     }),
-    finalizar: () => comSenhaAtual(async () => {
-      aplicar(await fila.finalizarAtendimento(atual.codigo), true);
+    finalizar: () => executar(async () => {
+      await fila.finalizarAtendimento(atual.codigo);
       return "Atendimento finalizado.";
     }),
-    naoCompareceu: () => comSenhaAtual(async (codigo) => {
-      aplicar(await fila.marcarNaoCompareceu(codigo), true);
-      return `Senha ${codigo} marcada como não compareceu.`;
+    naoCompareceu: () => executar(async () => {
+      await fila.marcarNaoCompareceu(atual.codigo);
+      return `Senha ${atual.codigo} marcada como não compareceu.`;
     }),
   };
 
@@ -166,17 +83,15 @@ export default function PainelAtendente() {
     <div className="pagina">
       <Cabecalho>
         <InfoUsuario
-          nomeUsuario={nomeAtendente}
-          funcao={`${funcaoAtendente},
-          guichê ${guiche}`}
-          aoSair={sair}
+          nomeUsuario={sessao?.usuario ?? "Atendente"}
+          funcao={`Atendente · guichê ${numeroGuiche ?? "—"}`}
         />
       </Cabecalho>
 
       <main className="pagina_corpo">
         <CabecalhoPagina
           titulo="Painel de atendimento"
-          subtitulo="Chame as senhas e registre cada atendimento."
+          subtitulo="Chame as senhas, inicie e finalize cada atendimento."
         >
           <div className="campo campo--guiche">
             <label className="campo_rotulo" htmlFor="guiche">Guichê</label>
@@ -184,17 +99,28 @@ export default function PainelAtendente() {
               id="guiche"
               className="campo_entrada"
               value={guiche ?? ""}
-              disabled={processando}
-              onChange={(e) => aoMudarGuiche(Number(e.target.value))}
+              disabled={processando || salvandoRegistro || registroPendente || !guiches.length}
+              onChange={(e) => { setGuiche(Number(e.target.value)); setMensagem(null); }}
             >
-              {GUICHES.map((g) => <option key={g.id} value={g.id}>Guichê {g.numero}</option>)}
+              {!guiches.length && <option value="">Sem guichês disponíveis</option>}
+              {guiches.map((g) => <option key={g.id} value={g.id}>Guichê {g.numero}</option>)}
             </select>
           </div>
         </CabecalhoPagina>
 
-        {erroFila && (
+        {erroGuiches && (
+          <div className="msg msg--erro" role="alert">
+            {erroGuiches}
+            <button type="button" className="botao botao--secundario" onClick={() => setTentativaGuiches((v) => v + 1)}>Tentar novamente</button>
+          </div>
+        )}
+        {atual?.pode_operar === false && (
+          <p className="msg msg--info">Este guichê está em uso por {atual.atendente}. Selecione outro guichê.</p>
+        )}
+        {carregando && <p role="status">Carregando fila e senha do guichê…</p>}
+        {erro && (
           <p className="msg msg--erro" role="alert">
-            Falha ao carregar a fila: {erroFila}
+            Falha ao atualizar atendimento: {erro} <button type="button" onClick={atualizar}>Tentar novamente</button>
           </p>
         )}
 
@@ -217,19 +143,17 @@ export default function PainelAtendente() {
 
         <div className="atend_grade">
           <aside className="atend_lateral">
-            <SenhaAtual senha={atual} acoes={acoes} carregando={processando} />
-            <FilaEspera senhas={aguardando} carregando={false}/>
+            <SenhaAtual senha={atual} acoes={acoes} carregando={bloqueado || registroPendente} />
+            <FilaEspera senhas={aguardando} carregando={carregando}/>
           </aside>
 
           <FichaPaciente
-            key={atual?.numero ?? "sem-senha"}
+            key={atual?.codigo ?? "sem-senha"}
             senha={atual}
-            carregando={processando}
-            aoSalvar={() =>
-              setMensagem({
-                tipo: "ok",
-                texto: "Registro preenchido (ainda não persistido no servidor)."
-              })} />
+            bloqueado={bloqueado}
+            aoProcessar={setSalvandoRegistro}
+            aoAlterar={setRegistroPendente}
+          />
         </div>
       </main>
 
