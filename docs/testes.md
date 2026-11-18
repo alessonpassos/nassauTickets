@@ -37,18 +37,53 @@ Marque ao executar. Nenhum item foi marcado automaticamente.
 
 | Cenário | Como verificar | Status |
 | ------- | -------------- | ------ |
-| Emissão gera `YYMMDD-PPSQ` e sequência por tipo | `POST /senhas` repetido | [ ] |
-| Duas chamadas simultâneas não retornam a mesma senha | Dois guichês chamando ao mesmo tempo | [ ] |
-| Alternância SP → SE\|SG → SP → SE\|SG | Emitir vários tipos e chamar em sequência | [ ] |
-| Guichê com senha em andamento não chama outra (409) | `chamar` duas vezes no mesmo guichê | [ ] |
-| Segunda chamada só uma vez (409 depois) | `repetir` duas vezes | [ ] |
-| `NAO_COMPARECEU` só após a 2ª chamada (409 antes) | `nao-compareceu` logo após `chamar` | [ ] |
-| Transições inválidas retornam 409 | `finalizar` em senha `AGUARDANDO` | [ ] |
-| Painel mostra no máximo 5 chamadas | `GET /senhas/atual` | [ ] |
-| Login incorreto retorna 401 com mensagem genérica | Senha errada e usuário inexistente | [ ] |
-| Rotas protegidas sem token retornam 401 | Casos 401 do `requests.http` | [ ] |
-| Relatórios só para gestor (403 para atendente) | Casos 403 do `requests.http` | [ ] |
-| Com o MySQL parado, `/health` retorna 503 | Parar o serviço e chamar `/health` | [ ] |
-| Com a API parada, totem e painel exibem aviso | Parar o backend e abrir as telas | [ ] |
+| Emissão gera `YYMMDD-PPSQ` e sequência por tipo | `POST /senhas` repetido | [x] |
+| Duas chamadas simultâneas não retornam a mesma senha | Dois guichês chamando ao mesmo tempo | [x] |
+| Alternância SP → SE\|SG → SP → SE\|SG | Emitir vários tipos e chamar em sequência | [x] |
+| Guichê com senha em andamento não chama outra (409) | `chamar` duas vezes no mesmo guichê | [x] |
+| Segunda chamada só uma vez (409 depois) | `repetir` duas vezes | [x] |
+| `NAO_COMPARECEU` só após a 2ª chamada (409 antes) | `nao-compareceu` logo após `chamar` | [x] |
+| Transições inválidas retornam 409 | `finalizar` em senha `AGUARDANDO` | [x] |
+| Painel mostra no máximo 5 chamadas | `GET /senhas/atual` | [x] |
+| Login incorreto retorna 401 com mensagem genérica | Senha errada e usuário inexistente | [x] |
+| Rotas protegidas sem token retornam 401 | Casos 401 do `requests.http` | [x] |
+| Relatórios só para gestor (403 para atendente) | Casos 403 do `requests.http` | [x] |
+| Com o MySQL parado, `/health` retorna 503 | Parar o serviço e chamar `/health` | [x] |
+| Com a API parada, totem e painel exibem aviso | Parar o backend e abrir as telas | [x] |
 | Numeração reinicia a cada dia | Comparar emissões em dias diferentes | [ ] |
 | Emissão e chamada fora de 7h–17h são recusadas | **Ainda não implementado** | [ ] |
+
+
+## Resultados dos testes feitos por Luiz antes da entrega
+
+Cada teste feito foi feito seguindo as ordem de cada item listado no "Checklist de testes",
+e marcado pelo teste Luiz após sua realização.
+
+Emissão de senhas: segue a regra de diferenciação de senha de atendimento geral, prioritário e
+de retirada de exames, seguindos os parametros de numeração de cada, com a sigla seguida pela
+numeração da ficha, logo em baixo, data na ordem: dois últimos digitos do ano, mês e dia, além de
+informar o horário que foi retirada a ficha.
+Duas chamadas simultâneas não retornam a mesma senha: feito o teste, com dois guichês chamando ao
+mesmo tempo, e chamando fichas diferentes.
+Alternancia de senhas seguindo a ordem prioridaria: as senhas chamadas seguem uma alternancia,
+chamando primeiro uma prioridaria, logo chama uma geral ou de retirada de exames, volta a chamar
+uma prioridaria e depois, se antes chamou uma geral, agora chama uma retirada de exames, e visse e versa.
+Guichê com senha em andamento não chama outra: feito o teste, após a chamada de uma senha, não será possível chamar outra senha caso não chame ela novamente e a coloque como não comparecida, ou finalizado o atendimento daquela senha.
+Segunda chamada só uma vez: após a chamada de uma senha o botão de chamar de novo só funciona uma vez para aquela senha, sendo necessário chamar outra senha para usar novamente o botão.
+`NAO_COMPARECEU` só após a 2ª chamada: o botão não compareceu só funciona a partir do momento que a segunda chamada da senha já foi efetuada, caso não ocorra de chamar novamente, não é possível por como não compareceu.
+Transições inválidas retornam 409: nas transições entre telas, se não tiver a autorização, pode haver dois acontecimentos, caso não tenha feito o login, será mandando para tela de login, caso já tenha feito o login e não possua a permissão de acessar aquela página, é mandada para tela do home.
+Painel mostra no máximo 5 chamadas: o painel de senhas só mostra no máximo as últimas 5 senhas chamadas, com destaque a última chamada, dizendo a senha e qual guichê a chamou, além dos horarios que foram chamadas.
+Login incorreto retorna 401 com mensagem genérica: Quando feito login incorreto aparecerá uma mensagem de ou usuário ou senha incorreta, em caixa vermelha em cima do login.
+Rotas protegidas sem token retornam 401: Mesmo caso do item de transições acima citado.
+Relatórios só para gestor: Somente tem conta com categoria de gestor tem acesso, podendo ver todas suas funcinalidades.
+Com o MySQL parado, `/health` retorna 503: Casos o banco não esteja ativo ou conectado, mostrará uma mensagem de que não foi possível se conectar com o sevidor, impossibilidando logins, emissões de fichas, e das funcionalidades que depedem dessas duas coisas.
+Com a API parada, totem e painel exibem aviso: Quando api não está funcionando, ambas mostram aviso de não conecção, não conseguindo fazer a emissão das fichas.
+
+## Notas adicionais sobres os testes de Luiz
+
+Caminho de rotas está totalmemte funcional, cada dela encaminha para tela correspondente como deveria, home podendo podendo direcionar para o totem, painel de chamadas e telas de atendimento e relatorios caso já tenha feito o login correspontente.
+Além da barra de caminhos na parte superior também funcionar com um direcionamento funcional na hora de navegar pelo programa.
+Totem se mantém em uma aba a parte, sem a possibilidade de navegar para qualquer outra aba, protegendo que algum cliente entre em uma aba não devida no totem.
+Tela do painel se mantém com problema de chamada de voz fica desativada toda vez que sair daquela tela, tendo que ser ativada manualmente toda vez que voltar para ela, mas todas as necessidades visuais se enquadram como deviam.
+Painel de atendente com suas funcionalidades conforme a documentação, podendo ver quais senhas estão na fila de espera para serem chamadas, preencher os campos estão tudo nos conformes.
+tela de gestor com seu relatórios podendo ver tanto somente do dia, como do mês que mostra a quantidade atendida, quais fichas foram chamadas, quais não, quantos não compareceram e descartadas, além do tempo médio dos atendimentos, e por fim os relatorios detalhados, onde mostra quem atendeu cada senha, em qual guichê, quando que foi emitida a senha e quando foi atendida, podendo filtrar por qual tipo de senha ou deixar todas as senhas.
