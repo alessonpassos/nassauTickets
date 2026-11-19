@@ -4,8 +4,8 @@ export const TOTEM = {
   nome: "Recepção principal",
   unidade: "Laboratório de Análises Clínicas",
   fusoHorario: "America/Sao_Paulo",
-  abertura: 0,
-  encerramento: 24,
+  abertura: 7,
+  encerramento: 17,
 };
 
 export const IMPRESSAO_MS = 5000;
